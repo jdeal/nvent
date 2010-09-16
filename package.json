@@ -1,14 +1,14 @@
 {
-	"name": "nvent",
-	"author": "Justin Deal",
-	"dependencies": [],
-	"contributors": [],
-	"keywords": [],
-	"engines": {"node":">=0.2.0"},
-	"githubName": "nvent",
-	"type": "zip",
-	"bin": {
-		"nvent": "./bin/nvent"
-	},
-	"location": "http://github.com/jdeal/nvent/zipball/master"
+    "name": "nvent",
+    "author": "Justin Deal",
+    "dependencies": [],
+    "contributors": [],
+    "keywords": [],
+    "engines": {"node":">=0.2.0"},
+    "githubName": "nvent",
+    "type": "zip",
+    "bin": {
+        "nvent": "./bin/nvent"
+    },
+    "location": "http://github.com/jdeal/nvent/zipball/master"
 }
