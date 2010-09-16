@@ -1,10 +1,74 @@
 <html>
 	<head>
 		<script type="text/javascript" src="/_core/lib/jquery.js"></script>
+		<script type="text/javascript" src="/_core/lib/jquery.layout.js"></script>
+		<script type="text/javascript" src="/_core/lib/jquery.cookie.js"></script>
+		<script type="text/javascript" src="/_core/lib/jquery.hotkeys.js"></script>
+		<script type="text/javascript" src="/_core/lib/jstree/jquery.jstree.js"></script>
 		<link id="bespin_base" href="/_core/lib/bespin"/>
 		<script src="/_core/lib/bespin/BespinEmbedded.js"></script>
+		<script>
+			$(function () {
+				$('body').layout({
+					applyDefaultStyles: true,
+					west__resizable: true
+				});
+				$('#resource-browser').jstree({
+					"core": {
+						"animation": 100
+					},
+					"themes": {
+						"theme": "apple",
+						"dots": false,
+						"icons": true
+					},
+					"types" : {
+						"types" : {
+							"default" : {
+								"valid_children" : [ "default" ],
+								"select_node" : function (e) {this.toggle_node(e);return false;}
+							}
+						}
+					},
+					"json_data": {
+						"ajax": {
+							"url":"/_core/resource.json",
+							"data":function(n){
+								return {id:0};
+							}
+						}
+					},
+					"plugins": [
+						"themes",
+						"json_data",
+						"types",
+						"ui",
+						"dnd"
+					]
+				});
+			});
+
+
+		</script>
 	</head>
 	<body>
-		<div class="bespin" data-bespinoptions='{ "stealFocus":true, "syntax": "js" }'></div>
+		<div class="ui-layout-center bespin" data-bespinoptions='{ "stealFocus":true, "syntax": "js" }'>Center</div>
+		<div class="ui-layout-north">North</div>
+		<div class="ui-layout-south">South</div>
+		<!--<div class="ui-layout-east">East</div>-->
+		<div class="ui-layout-west">
+			<div id="resource-browser">
+				<ul>
+					<li id="item_1" rel="root">
+						<a href="#">Root node 1</a>
+						<ul>
+							<li id="item_2">
+								<a href="#">Child node 1</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+		</div>
 	</body>
 </html>
