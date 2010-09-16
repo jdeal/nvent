@@ -1,27 +1,33 @@
 <html>
 	<head>
 		<script type="text/javascript" src="/_core/lib/jquery.js"></script>
+		<script type="text/javascript" src="/_core/lib/jquery-ui.js"></script>
 		<script type="text/javascript" src="/_core/lib/jquery.layout.js"></script>
 		<script type="text/javascript" src="/_core/lib/jquery.cookie.js"></script>
 		<script type="text/javascript" src="/_core/lib/jquery.hotkeys.js"></script>
 		<script type="text/javascript" src="/_core/lib/jstree/jquery.jstree.js"></script>
 		<link id="bespin_base" href="/_core/lib/bespin"/>
+		<link type="text/css" rel="stylesheet" href="/_core/css/layout-default.css" />
 		<script src="/_core/lib/bespin/BespinEmbedded.js"></script>
 		<script>
 
 			var ideEditor = null;
 
 			$(function () {
-				$('body').layout({
-					applyDefaultStyles: true,
-					west__resizable: true
-				});
+				//$('body').layout({
+					//applyDefaultStyles: true,
+					//closable: true,
+					//resizable: true,
+					//slidable: true
+				///});
+				var layout = $("body").layout()
+
 				$('#resource-browser').jstree({
 					"core": {
 						"animation": 100
 					},
 					"themes": {
-						"theme": "apple",
+						"theme": "default",
 						"dots": false,
 						"icons": true
 					},
@@ -89,6 +95,16 @@
 				//editor.setLineNumber(2);
 				//alert(bespin)
 			};
+
+			$(document).bind('keydown', 'ctrl+s', function(e){
+				//alert(e)
+				//e.preventDefault();
+				//alert("save!")
+				$.post("/_core/save.json",{path:"",content:ideEditor.value},function(data){
+
+				})
+				return false;
+			});
 
 
 
