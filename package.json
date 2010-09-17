@@ -1,0 +1,15 @@
+{
+	"name": "axis",
+	"author": "Justin Deal",
+	"dependencies": [],
+	"contributors": [],
+	"keywords": [],
+	"engines": {"node":">=0.2.0"},
+	"githubName": "axis",
+	"type": "zip",
+	"main": "./lib/axis",
+	"bin": {
+		"axis": "./cli.js"
+	},
+	"location": "http://github.com/mrdeal/axis/zipball/master"
+}
