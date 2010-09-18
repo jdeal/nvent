@@ -1,15 +1,15 @@
 {
-	"name": "axis",
+	"name": "nvent",
 	"author": "Justin Deal",
 	"dependencies": [],
 	"contributors": [],
 	"keywords": [],
 	"engines": {"node":">=0.2.0"},
-	"githubName": "axis",
+	"githubName": "nvent",
 	"type": "zip",
-	"main": "./lib/axis",
+	"main": "./lib/nvent",
 	"bin": {
-		"axis": "./cli.js"
+		"nvent": "./cli.js"
 	},
-	"location": "http://github.com/mrdeal/axis/zipball/master"
+	"location": "http://github.com/jdeal/nvent/zipball/master"
 }
