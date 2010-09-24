@@ -40,6 +40,7 @@
 									//alert(n.attr("path"))
 									//this.select_node(n)
 									//alert($(n).parent().attr("path"))
+									ideEditor.nventPath = $(n).parent().attr("path");
 									$.getJSON("/_core/file.json?path="+$(n).parent().attr("path"),function(data){
 										if (ideEditor) {
 											if (data.result.type === "file"){
@@ -82,6 +83,18 @@
 						
 					})
 				})
+
+				//$(document).bind('keydown', 'ctrl+s', function(e){
+				$(".server-save").click(function(){
+					//alert(e)
+					//e.preventDefault();
+					//alert("save!")
+					//alert(ideEditor.value)
+					$.post("/_core/save.json",{path:ideEditor.nventPath,content:ideEditor.value},function(data){
+
+					})
+					return false;
+				});
 			});
 
 			window.onBespinLoad = function() {
@@ -96,16 +109,6 @@
 				//alert(bespin)
 			};
 
-			$(document).bind('keydown', 'ctrl+s', function(e){
-				//alert(e)
-				//e.preventDefault();
-				//alert("save!")
-				$.post("/_core/save.json",{path:"",content:ideEditor.value},function(data){
-
-				})
-				return false;
-			});
-
 
 
 		</script>
@@ -114,7 +117,10 @@
 		<div class="ui-layout-center">
 			<div id="ide-editor" class="bespin" data-bespinoptions='{ "stealFocus":true, "syntax": "js" }'></div>
 		</div>
-		<div class="ui-layout-north"><a class="server-restart" href="#">Restart</a></div>
+		<div class="ui-layout-north">
+			<a class="server-restart" href="#">Restart</a>
+			<a class="server-save" href="#">Save</a>
+		</div>
 		<div class="ui-layout-south">South</div>
 		<!--<div class="ui-layout-east">East</div>-->
 		<div class="ui-layout-west">
