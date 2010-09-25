@@ -1,0 +1,16 @@
+var server = require("nvent/server").server;
+var netBinding = process.binding('net')
+var net = require('net')
+
+var start = exports.start = function(){
+	
+    var afNum = ;
+    var fd = netBinding.socket('tcp' + afNum);
+    netBinding.bind(fd, 8000, null);
+    netBinding.listen(fd, 128);
+    //var fds = netBinding.socketpair();
+    
+    console.log("nvent started");
+    //server.listen(8000);
+    server.listenFD(fd);
+}

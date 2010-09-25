@@ -5,6 +5,11 @@ var path = require("path");
 require.paths.unshift(path.join(__dirname,"../resources/@public/_core/lib"))
 require.paths.unshift(path.join(__dirname,"../lib"))
 
+var argv = require("optimist").argv;
 var nvent = require("nvent");
 
-nvent.start()
+if (argv.child) {
+    nvent.startChild()
+} else {
+    nvent.start()
+}

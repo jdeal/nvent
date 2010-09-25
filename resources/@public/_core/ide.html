@@ -72,6 +72,7 @@
                 
                 $(".server-restart").click(function(){
                     $.getJSON("/_core/restart.json",function(data){
+                        window.location.reload();
                     })
                 })
                 
@@ -93,6 +94,7 @@
                 // Get the environment variable.
                 var env = edit.bespin;
                 env.settings.set("tabstop",4);
+                //env.settings.set("tabmode","on");
                 // Get the editor.
                 ideEditor = env.editor;
                 // Change the value and move to the secound line.
