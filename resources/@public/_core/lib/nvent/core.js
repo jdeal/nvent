@@ -14,7 +14,7 @@ if (typeof(String.prototype.startsWith) === "undefined") {
 	}
 }
 if (typeof(String.prototype.endsWith) === "undefined") {
-	String.prototype.startsWith = function(s) {
+	String.prototype.endsWith = function(s) {
 		s = "" + s;
 		if (s.length > this.length){
 			return false;
@@ -36,8 +36,12 @@ if (typeof(require) === "undefined") {
 		require.registry[name] = {}
 		return require.registry[name]
 	}
-	require.registry["jquery"] = $
-	require.registry["async"] = async
+	if (typeof($)!=="undefined"){
+		require.registry["jquery"] = $
+	}
+	if (typeof(async)!=="undefined"){
+		require.registry["async"] = async
+	}
 }
 
 (function(exports){

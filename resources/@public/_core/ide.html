@@ -1,3 +1,4 @@
+<!DOCTYPE HTML>
 <html>
     <head>
         <script type="text/javascript" src="/_core/lib/jquery.js"></script>
@@ -6,16 +7,61 @@
         <script type="text/javascript" src="/_core/lib/jquery.cookie.js"></script>
         <script type="text/javascript" src="/_core/lib/jquery.hotkeys.js"></script>
         <script type="text/javascript" src="/_core/lib/jstree/jquery.jstree.js"></script>
+        <script type="text/javascript" src="/_core/lib/nvent/core.js"></script>
         <link id="bespin_base" href="/_core/lib/bespin"/>
         <link type="text/css" rel="stylesheet" href="/_core/css/layout-default.css" />
+        <link type="text/css" rel="stylesheet" href="/_core/css/jquery-ui/aristo/jquery-ui.css" />
         <script src="/_core/lib/bespin/BespinEmbedded.js"></script>
         <script>
             var ideEditor = null;
+            var ideEnvironment = null;
+            var ideTabStop = 4;
+            var bespinReady = false;
+            var contentReady = false;
+            var defaultBespinLoaded = false;
+            
+            function resizeContent(){
+            	$("#ide-tabs").width($("#content-pane").width());
+            	$("#ide-editor-0").height($("#content-pane").height()-$("#ide-tabs").outerHeight())
+            	$("#ide-editor-0").width($("#content-pane").width());
+            	contentReady = true;
+            	loadDefaultBespin();
+            }
+            
+            function loadDefaultBespin(){
+            	if (!defaultBespinLoaded){
+                	if (bespinReady && contentReady){
+                        bespin.useBespin("ide-editor-0",{
+                            syntax: "html"
+                        }).then(function(env) {
+                            ideEnvironment = env;
+                            env.settings.set("tabstop",ideTabStop);
+                            // Get the editor.
+                            ideEditor = env.editor;
+                            // Change the value.
+                            ideEditor.value = 'Hello world!';
+                        }, function(error) {
+                            throw new Error("Launch failed: " + error);
+                        });
+                        defaultBespinLoaded = true;
+                    }
+                }
+            }
+            
+            window.onBespinLoad = function() {
+            	bespinReady = true;
+            	loadDefaultBespin();
+            }
             
             $(function () {
                 var layout = $("body").layout({
                     onresize: function(){
-                        ideEditor.dimensionsChanged();
+                    	resizeContent();
+                    	if (ideEditor != null){
+                    		ideEditor.dimensionsChanged();
+                    	}
+                        //ideEditor.dimensionsChanged();
+                        //console.log("resize");
                     }
                 })
                 $('#resource-browser').jstree({
@@ -37,10 +83,30 @@
                                     //this.select_node(n)
                                     //alert($(n).parent().attr("path"))
                                     ideEditor.nventPath = $(n).parent().attr("path");
-                                    $.getJSON("/_core/file.json?path="+$(n).parent().attr("path"),function(data){
+                                    $.getJSON("/_core/file.json?path="+ideEditor.nventPath,function(data){
                                         if (ideEditor) {
                                             if (data.result.type === "file"){
-                                                ideEditor.value = data.result.content;
+                                                var reTabLine = /^\t+/mg
+                                                var reTab = /\t/g
+                                                var tabSpaces = "";
+                                                for (var i = 0; i < ideTabStop; i++){
+                                                    tabSpaces = tabSpaces + " ";
+                                                }
+                                                //alert(reTab.test(data.result.content));
+                                                var content = data.result.content.replace(reTabLine,function(match){
+                                                	return match.replace(reTab,tabSpaces);
+                                                });
+                                                //alert(content);
+                                                if (ideEditor.nventPath.endsWith("js") || ideEditor.nventPath.endsWith("json")){
+                                                    ideEditor.syntax = "js";
+                                                } else if (ideEditor.nventPath.endsWith("html")){
+                                                    ideEditor.syntax = "html";
+                                                } else if (ideEditor.nventPath.endsWith("css")){
+                                                	ideEditor.syntax = "css";
+                                                } else {
+                                                    ideEditor.syntax = "";
+                                                }
+                                                ideEditor.value = content;
                                             } else {
                                                 ideEditor.value = "";
                                             }
@@ -80,6 +146,14 @@
                     })
                 })
                 
+                $(".server-kill").click(function(){
+                    if (confirm("Are you sure you want to kill the server?")){
+                        $.getJSON("/_core/kill.json",function(data){
+                            window.location.reload();
+                        })
+                    }
+                })
+                
                 //$(document).bind('keydown', 'ctrl+s', function(e){
                 $(".server-save").click(function(){
                     //alert(e)
@@ -114,20 +188,13 @@
 
 
                 //alert(editor)
+                
+                $(".ui-layout-center").tabs()
+                resizeContent();
             });
 
-            window.onBespinLoad = function() {
-                bespin.useBespin("ide-editor").then(function(env) {
-                    // Get the editor.
-                    ideEditor = env.editor;
-                    // Change the value.
-                    ideEditor.value = 'Hello world!';
-                }, function(error) {
-                    throw new Error("Launch failed: " + error);
-                });
-            }
 
-			/*
+            /*
             window.onBespinLoad = function() {
                 var edit = $("#ide-editor")[0];
                 // Get the environment variable.
@@ -141,12 +208,13 @@
                 //editor.setLineNumber(2);
                 //alert(bespin)
             };
-			*/
+            */
         </script>
     </head>
     <body>
         <div class="ui-layout-north">
             <a class="server-restart" href="#">Restart</a>
+            <a class="server-kill" href="#">Kill</a>
             <a class="server-save" href="#">Save</a>
         </div>
         <div class="ui-layout-west">
@@ -167,12 +235,15 @@
             South
         </div>
         <!--<div class="ui-layout-east">East</div>-->
-        <div class="ui-layout-center">
+        <div id="content-pane" class="ui-layout-center" style="overflow: hidden; padding: 0px;">
             <!--
             <div id="ide-editor" class="bespin" data-bespinoptions='{ "stealFocus":true, "syntax": "js" }'></div>
             </div>
             -->
-            <div style="width:100%; height:100%; margin:0px; display:block;" id="ide-editor"></div>
+            <ul id="ide-tabs" style="padding: 0px;  margin:0px;">
+            	<li><a href="#ide-editor-0">Hello!</a></li>
+            </ul>
+            <div style="padding: 0px; margin: 0px; border: 0px;" id="ide-editor-0"></div>
         </div>
     </body>
 </html>
