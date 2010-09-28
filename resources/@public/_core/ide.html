@@ -20,10 +20,12 @@
             var contentReady = false;
             var defaultBespinLoaded = false;
             
+            var currentTabId = "";
+            
             function resizeContent(){
             	$("#ide-tabs").width($("#content-pane").width());
-            	$("#ide-editor-0").height($("#content-pane").height()-$("#ide-tabs").outerHeight())
-            	$("#ide-editor-0").width($("#content-pane").width());
+            	$("#" + currentTabId).height($("#content-pane").height()-$("#ide-tabs").outerHeight())
+            	$("#" + currentTabId).width($("#content-pane").width());
             	contentReady = true;
             	loadDefaultBespin();
             }
@@ -31,22 +33,30 @@
             function loadDefaultBespin(){
             	if (!defaultBespinLoaded){
                 	if (bespinReady && contentReady){
-                        bespin.useBespin("ide-editor-0",{
-                            syntax: "html"
-                        }).then(function(env) {
-                            ideEnvironment = env;
-                            env.settings.set("tabstop",ideTabStop);
-                            // Get the editor.
-                            ideEditor = env.editor;
-                            // Change the value.
-                            ideEditor.value = 'Hello world!';
-                        }, function(error) {
-                            throw new Error("Launch failed: " + error);
-                        });
+                		attachBespin("ide-editor-0","Hello, world!","html");
                         defaultBespinLoaded = true;
                     }
                 }
             }
+            
+			function attachBespin(id,content,syntax,callback){
+                bespin.useBespin(id,{
+                    syntax: syntax
+                }).then(function(env) {
+                    ideEnvironment = env;
+                    env.settings.set("tabstop",ideTabStop);
+                    // Get the editor.
+                    ideEditor = env.editor;
+                    // Change the value.
+                    ideEditor.value = content;
+                    if (typeof(callback)!=="undefined"){
+                    	callback();
+                    }
+                }, function(error) {
+                    throw new Error("Launch failed: " + error);
+                });
+			}
+            
             
             window.onBespinLoad = function() {
             	bespinReady = true;
@@ -55,6 +65,7 @@
             
             $(function () {
                 var layout = $("body").layout({
+                	north__size: 55,
                     onresize: function(){
                     	resizeContent();
                     	if (ideEditor != null){
@@ -140,13 +151,13 @@
                     ]
                 });
                 
-                $(".server-restart").click(function(){
+                $(".server-restart").button().click(function(){
                     $.getJSON("/_core/restart.json",function(data){
                         window.location.reload();
                     })
                 })
                 
-                $(".server-kill").click(function(){
+                $(".server-kill").button().click(function(){
                     if (confirm("Are you sure you want to kill the server?")){
                         $.getJSON("/_core/kill.json",function(data){
                             window.location.reload();
@@ -155,7 +166,7 @@
                 })
                 
                 //$(document).bind('keydown', 'ctrl+s', function(e){
-                $(".server-save").click(function(){
+                $(".server-save").button().click(function(){
                     //alert(e)
                     //e.preventDefault();
                     //alert("save!")
@@ -189,9 +200,34 @@
 
                 //alert(editor)
                 
-                $(".ui-layout-center").tabs()
+                $("#content-pane").tabs()
+                $("#content-pane").tabs("select",1)
+                currentTabId = "ide-editor-0";
+                $("#content-pane").tabs({
+                	select: function(event, ui) {
+                		currentTabId = ui.panel.id;
+                		resizeContent();
+                	}
+                });
                 resizeContent();
             });
+            
+            var ideEditorIndex = 0;
+            
+            function addEditor(name,content,syntax,callback){
+            	ideEditorIndex++;
+            	var ideEditorId = "ide-editor-" + ideEditorIndex;
+            	$("#content-pane").append('<div style="padding: 0px; margin: 0px; border: 0px;" id="' + ideEditorId + '"></div>')
+            	$("#content-pane").tabs("add","#" + ideEditorId,name);
+            	$("#content-pane").tabs("select",ideEditorId);
+            	currentTabId = ideEditorId;
+            	resizeContent();
+            	attachBespin(ideEditorId,content,syntax,function(){
+            		if (typeof(callback)!=="undefined"){
+            			callback();
+            		}
+            	});
+            }
 
 
             /*
@@ -232,7 +268,7 @@
             </div>
         </div>
         <div class="ui-layout-south">
-            South
+            Nothing here yet!
         </div>
         <!--<div class="ui-layout-east">East</div>-->
         <div id="content-pane" class="ui-layout-center" style="overflow: hidden; padding: 0px;">
@@ -241,8 +277,10 @@
             </div>
             -->
             <ul id="ide-tabs" style="padding: 0px;  margin:0px;">
-            	<li><a href="#ide-editor-0">Hello!</a></li>
+            	<li><a href="#home">Home</a></li>
+            	<li><a href="#ide-editor-0">IDE</a></li>
             </ul>
+            <div style="padding: 0px; margin: 0px; border: 0px;" id="home"></div>
             <div style="padding: 0px; margin: 0px; border: 0px;" id="ide-editor-0"></div>
         </div>
     </body>
