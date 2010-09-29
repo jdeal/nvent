@@ -105,7 +105,7 @@
                                     tabForPath($(n).parent().attr("path"),function(tab){
                                         $.getJSON("/_core/file.json?path="+tab.path,function(data){
                                             if (data.result.type === "file"){
-                                                var reTabLine = /^\t+/mg
+                                                var reTabLine = /^ *(\t *)+/mg
                                                 var reTab = /\t/g
                                                 var tabSpaces = "";
                                                 for (var i = 0; i < ideTabStop; i++){
