@@ -47,7 +47,7 @@
             }
             */
 
-			function attachBespin(id,content,syntax,callback){
+            function attachBespin(id,content,syntax,callback){
                 bespin.useBespin(id,{
                     syntax: syntax
                 }).then(function(env) {
@@ -63,7 +63,7 @@
                 }, function(error) {
                     throw new Error("Launch failed: " + error);
                 });
-			}
+            }
             
             
             window.onBespinLoad = function() {
@@ -181,11 +181,10 @@
                     //alert(ideEditor.value)
                     var tab = currentEditorTab();
                     if (tab != null){
-                        alert("save " + tab.path)
+                        $.post("/_core/save.json",{path:tab.path,content:tab.editor.value},function(data){
+
+                        })
                     }
-                    //$.post("/_core/save.json",{path:ideEditor.nventPath,content:ideEditor.value},function(data){
-                    
-                    //})
                     return false;
                 });
 /*
@@ -234,12 +233,13 @@
             	$("#content-pane").append('<div style="padding: 0px; margin: 0px; border: 0px;" id="' + ideEditorId + '"></div>')
             	$("#content-pane").tabs("add","#" + ideEditorId,name);
             	$("#content-pane").tabs("select",ideEditorId);
+                tab.id = ideEditorId;
+                tabIdToTab[ideEditorId] = tab;
+                currentTab = tab;
             	resizeContent();
             	attachBespin(ideEditorId,content,syntax,function(env){
                     tab.editor = env.editor;
                     tab.editor.dimensionsChanged();
-                    tab.id = ideEditorId;
-                    tabIdToTab[ideEditorId] = tab;
             		if (typeof(callback)!=="undefined"){
             			callback(tab);
             		}
