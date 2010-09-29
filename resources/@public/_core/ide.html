@@ -26,21 +26,21 @@
             var currentTab = null;
             
             function resizeContent(){
-            	$("#ide-tabs").width($("#content-pane").width());
-            	$("#" + currentTabId).height($("#content-pane").height()-$("#ide-tabs").outerHeight())
-            	$("#" + currentTabId).width($("#content-pane").width());
+                $("#ide-tabs").width($("#content-pane").width());
+                $("#" + currentTabId).height($("#content-pane").height()-$("#ide-tabs").outerHeight())
+                $("#" + currentTabId).width($("#content-pane").width());
                 var tab = currentEditorTab();
                 if (tab != null){
                     tab.editor.dimensionsChanged();
                 }
-            	//contentReady = true;
-            	//loadDefaultBespin();
+                //contentReady = true;
+                //loadDefaultBespin();
             }
             /*
             function loadDefaultBespin(){
-            	if (!defaultBespinLoaded){
-                	if (bespinReady && contentReady){
-                		attachBespin("ide-editor-0","Hello, world!","html");
+                if (!defaultBespinLoaded){
+                    if (bespinReady && contentReady){
+                        attachBespin("ide-editor-0","Hello, world!","html");
                         defaultBespinLoaded = true;
                     }
                 }
@@ -58,7 +58,7 @@
                     // Change the value.
                     env.editor.value = content;
                     if (typeof(callback)!=="undefined"){
-                    	callback(env);
+                        callback(env);
                     }
                 }, function(error) {
                     throw new Error("Launch failed: " + error);
@@ -67,18 +67,18 @@
             
             
             window.onBespinLoad = function() {
-            	bespinReady = true;
-            	//loadDefaultBespin();
+                bespinReady = true;
+                //loadDefaultBespin();
             }
             
             $(function () {
                 var layout = $("body").layout({
-                	north__size: 55,
+                    north__size: 55,
                     onresize: function(){
-                    	resizeContent();
-                    	if (currentTab != null && typeof(currentTab.editor)!=="undefined"){
-                    		currentTab.editor.dimensionsChanged();
-                    	}
+                        resizeContent();
+                        if (currentTab != null && typeof(currentTab.editor)!=="undefined"){
+                            currentTab.editor.dimensionsChanged();
+                        }
                         //ideEditor.dimensionsChanged();
                         //console.log("resize");
                     }
@@ -103,6 +103,7 @@
                                     //alert($(n).parent().attr("path"))
                                     //ideEditor.nventPath = $(n).parent().attr("path");
                                     tabForPath($(n).parent().attr("path"),function(tab){
+                                        $("#content-pane").tabs("select",tab.id);
                                         $.getJSON("/_core/file.json?path="+tab.path,function(data){
                                             if (data.result.type === "file"){
                                                 var reTabLine = /^ *(\t *)+/mg
@@ -215,11 +216,11 @@
                 $("#content-pane").tabs("select",1)
                 currentTabId = "ide-editor-0";
                 $("#content-pane").tabs({
-                	show: function(event, ui) {
-                		currentTabId = ui.panel.id;
+                    show: function(event, ui) {
+                        currentTabId = ui.panel.id;
                         currentTab = tabIdToTab[currentTabId]
-                		resizeContent();
-                	}
+                        resizeContent();
+                    }
                 });
                 resizeContent();
             });
@@ -228,22 +229,22 @@
             
             function addEditor(name,content,syntax,callback){
                 var tab = {}
-            	ideEditorIndex++;
-            	var ideEditorId = "ide-editor-" + ideEditorIndex;
-            	$("#content-pane").append('<div style="padding: 0px; margin: 0px; border: 0px;" id="' + ideEditorId + '"></div>')
-            	$("#content-pane").tabs("add","#" + ideEditorId,name);
-            	$("#content-pane").tabs("select",ideEditorId);
+                ideEditorIndex++;
+                var ideEditorId = "ide-editor-" + ideEditorIndex;
+                $("#content-pane").append('<div style="padding: 0px; margin: 0px; border: 0px;" id="' + ideEditorId + '"></div>')
+                $("#content-pane").tabs("add","#" + ideEditorId,name);
+                $("#content-pane").tabs("select",ideEditorId);
                 tab.id = ideEditorId;
                 tabIdToTab[ideEditorId] = tab;
                 currentTab = tab;
-            	resizeContent();
-            	attachBespin(ideEditorId,content,syntax,function(env){
+                resizeContent();
+                attachBespin(ideEditorId,content,syntax,function(env){
                     tab.editor = env.editor;
                     tab.editor.dimensionsChanged();
-            		if (typeof(callback)!=="undefined"){
-            			callback(tab);
-            		}
-            	});
+                    if (typeof(callback)!=="undefined"){
+                        callback(tab);
+                    }
+                });
             }
 
             function addEditorAfterBespinLoaded(name,content,syntax,callback){
@@ -324,8 +325,8 @@
             </div>
             -->
             <ul id="ide-tabs" style="padding: 0px;  margin:0px;">
-            	<li><a href="#home">Home</a></li>
-            	<!--<li><a href="#ide-editor-0">IDE</a></li>-->
+                <li><a href="#home">Home</a></li>
+                <!--<li><a href="#ide-editor-0">IDE</a></li>-->
             </ul>
             <div style="padding: 0px; margin: 0px; border: 0px;" id="home"><br/>Welcome to the awesome node.js IDE!</div>
             <!--<div style="padding: 0px; margin: 0px; border: 0px;" id="ide-editor-0"></div>-->
