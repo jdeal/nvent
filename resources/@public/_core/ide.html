@@ -13,23 +13,30 @@
         <link type="text/css" rel="stylesheet" href="/_core/css/jquery-ui/aristo/jquery-ui.css" />
         <script src="/_core/lib/bespin/BespinEmbedded.js"></script>
         <script>
-            var ideEditor = null;
-            var ideEnvironment = null;
+            //var ideEditor = null;
+            //var ideEnvironment = null;
             var ideTabStop = 4;
             var bespinReady = false;
-            var contentReady = false;
-            var defaultBespinLoaded = false;
+            //var contentReady = false;
+            //var defaultBespinLoaded = false;
             
             var currentTabId = "";
+            var tabIdToTab = {}
+            var pathToTab = {}
+            var currentTab = null;
             
             function resizeContent(){
             	$("#ide-tabs").width($("#content-pane").width());
             	$("#" + currentTabId).height($("#content-pane").height()-$("#ide-tabs").outerHeight())
             	$("#" + currentTabId).width($("#content-pane").width());
-            	contentReady = true;
-            	loadDefaultBespin();
+                var tab = currentEditorTab();
+                if (tab != null){
+                    tab.editor.dimensionsChanged();
+                }
+            	//contentReady = true;
+            	//loadDefaultBespin();
             }
-            
+            /*
             function loadDefaultBespin(){
             	if (!defaultBespinLoaded){
                 	if (bespinReady && contentReady){
@@ -38,19 +45,20 @@
                     }
                 }
             }
-            
+            */
+
 			function attachBespin(id,content,syntax,callback){
                 bespin.useBespin(id,{
                     syntax: syntax
                 }).then(function(env) {
-                    ideEnvironment = env;
+                    //ideEnvironment = env;
                     env.settings.set("tabstop",ideTabStop);
                     // Get the editor.
-                    ideEditor = env.editor;
+                    //ideEditor = env.editor;
                     // Change the value.
-                    ideEditor.value = content;
+                    env.editor.value = content;
                     if (typeof(callback)!=="undefined"){
-                    	callback();
+                    	callback(env);
                     }
                 }, function(error) {
                     throw new Error("Launch failed: " + error);
@@ -60,7 +68,7 @@
             
             window.onBespinLoad = function() {
             	bespinReady = true;
-            	loadDefaultBespin();
+            	//loadDefaultBespin();
             }
             
             $(function () {
@@ -68,8 +76,8 @@
                 	north__size: 55,
                     onresize: function(){
                     	resizeContent();
-                    	if (ideEditor != null){
-                    		ideEditor.dimensionsChanged();
+                    	if (currentTab != null && typeof(currentTab.editor)!=="undefined"){
+                    		currentTab.editor.dimensionsChanged();
                     	}
                         //ideEditor.dimensionsChanged();
                         //console.log("resize");
@@ -93,9 +101,9 @@
                                     //alert(n.attr("path"))
                                     //this.select_node(n)
                                     //alert($(n).parent().attr("path"))
-                                    ideEditor.nventPath = $(n).parent().attr("path");
-                                    $.getJSON("/_core/file.json?path="+ideEditor.nventPath,function(data){
-                                        if (ideEditor) {
+                                    //ideEditor.nventPath = $(n).parent().attr("path");
+                                    tabForPath($(n).parent().attr("path"),function(tab){
+                                        $.getJSON("/_core/file.json?path="+tab.path,function(data){
                                             if (data.result.type === "file"){
                                                 var reTabLine = /^\t+/mg
                                                 var reTab = /\t/g
@@ -105,23 +113,23 @@
                                                 }
                                                 //alert(reTab.test(data.result.content));
                                                 var content = data.result.content.replace(reTabLine,function(match){
-                                                	return match.replace(reTab,tabSpaces);
+                                                    return match.replace(reTab,tabSpaces);
                                                 });
                                                 //alert(content);
-                                                if (ideEditor.nventPath.endsWith("js") || ideEditor.nventPath.endsWith("json")){
-                                                    ideEditor.syntax = "js";
-                                                } else if (ideEditor.nventPath.endsWith("html")){
-                                                    ideEditor.syntax = "html";
-                                                } else if (ideEditor.nventPath.endsWith("css")){
-                                                	ideEditor.syntax = "css";
+                                                if (tab.path.endsWith("js") || tab.path.endsWith("json")){
+                                                    tab.editor.syntax = "js";
+                                                } else if (tab.path.endsWith("html")){
+                                                    tab.editor.syntax = "html";
+                                                } else if (tab.path.endsWith("css")){
+                                                    tab.editor.syntax = "css";
                                                 } else {
-                                                    ideEditor.syntax = "";
+                                                    tab.editor.syntax = "";
                                                 }
-                                                ideEditor.value = content;
+                                                tab.editor.value = content;
                                             } else {
-                                                ideEditor.value = "";
+                                                tab.editor.value = "";
                                             }
-                                        }
+                                        })
                                     })
                                 }
                             }
@@ -171,9 +179,13 @@
                     //e.preventDefault();
                     //alert("save!")
                     //alert(ideEditor.value)
-                    $.post("/_core/save.json",{path:ideEditor.nventPath,content:ideEditor.value},function(data){
+                    var tab = currentEditorTab();
+                    if (tab != null){
+                        alert("save " + tab.path)
+                    }
+                    //$.post("/_core/save.json",{path:ideEditor.nventPath,content:ideEditor.value},function(data){
                     
-                    })
+                    //})
                     return false;
                 });
 /*
@@ -204,8 +216,9 @@
                 $("#content-pane").tabs("select",1)
                 currentTabId = "ide-editor-0";
                 $("#content-pane").tabs({
-                	select: function(event, ui) {
+                	show: function(event, ui) {
                 		currentTabId = ui.panel.id;
+                        currentTab = tabIdToTab[currentTabId]
                 		resizeContent();
                 	}
                 });
@@ -215,18 +228,52 @@
             var ideEditorIndex = 0;
             
             function addEditor(name,content,syntax,callback){
+                var tab = {}
             	ideEditorIndex++;
             	var ideEditorId = "ide-editor-" + ideEditorIndex;
             	$("#content-pane").append('<div style="padding: 0px; margin: 0px; border: 0px;" id="' + ideEditorId + '"></div>')
             	$("#content-pane").tabs("add","#" + ideEditorId,name);
             	$("#content-pane").tabs("select",ideEditorId);
-            	currentTabId = ideEditorId;
             	resizeContent();
-            	attachBespin(ideEditorId,content,syntax,function(){
+            	attachBespin(ideEditorId,content,syntax,function(env){
+                    tab.editor = env.editor;
+                    tab.editor.dimensionsChanged();
+                    tab.id = ideEditorId;
+                    tabIdToTab[ideEditorId] = tab;
             		if (typeof(callback)!=="undefined"){
-            			callback();
+            			callback(tab);
             		}
             	});
+            }
+
+            function addEditorAfterBespinLoaded(name,content,syntax,callback){
+                if (bespinReady){
+                    addEditor(name,content,syntax,callback);
+                } else {
+                    setTimeout(function(){addEditor(name,content,syntax,callback)},100);
+                }
+            }
+
+            function tabForPath(path,callback){
+                if (path in pathToTab){
+                    callback(pathToTab[path]);
+                } else {
+                    var pathParts = path.split("/")
+                    addEditor(pathParts[pathParts.length - 1],"","",function(tab){
+                        tab.path = path;
+                        pathToTab[path] = tab;
+                        callback(tab)
+                    })
+                }
+            }
+            
+            function currentEditorTab(){
+                if (currentTab != null){
+                    if (typeof(currentTab.editor)!=="undefined"){
+                        return currentTab;
+                    }
+                }
+                return null;
             }
 
 
@@ -278,10 +325,10 @@
             -->
             <ul id="ide-tabs" style="padding: 0px;  margin:0px;">
             	<li><a href="#home">Home</a></li>
-            	<li><a href="#ide-editor-0">IDE</a></li>
+            	<!--<li><a href="#ide-editor-0">IDE</a></li>-->
             </ul>
-            <div style="padding: 0px; margin: 0px; border: 0px;" id="home"></div>
-            <div style="padding: 0px; margin: 0px; border: 0px;" id="ide-editor-0"></div>
+            <div style="padding: 0px; margin: 0px; border: 0px;" id="home"><br/>Welcome to the awesome node.js IDE!</div>
+            <!--<div style="padding: 0px; margin: 0px; border: 0px;" id="ide-editor-0"></div>-->
         </div>
     </body>
 </html>
