@@ -1,0 +1,7 @@
+{
+    "output_dir": "nvent_bespin",
+    "plugins": ["embedded", "command_line", "html", "js_syntax", "stylesheet", "uicommands", "editing_commands"],
+    "include_tests": false,
+    "include_sample": true,
+    "jquery": "global"    
+}

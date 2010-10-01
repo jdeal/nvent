@@ -370,16 +370,17 @@ input.ui-button:active { background: url(images/button_bg.png) 0px bottom repeat
 .ui-button-text-only .ui-button-text { padding: 5px 12px; }
 .ui-button-icon-only .ui-button-text, .ui-button-icons-only .ui-button-text { padding: 5px; text-indent: -9999999px; }
 .ui-button-text-icon .ui-button-text, .ui-button-text-icons .ui-button-text { padding: 5px 12px 5px 25px; }
+.ui-button-text-icon-secondary .ui-button-text, .ui-button-text-icons .ui-button-text { padding: 5px 25px 5px 12px; }
 .ui-button-text-icons .ui-button-text { padding-right: 1.8em; }
 /* no icon support for input elements, provide padding by default */
 input.ui-button { padding: .4em 1em; }
 
 /*button icon element(s) */
 .ui-button .ui-icon { border: 0px none; }
-.ui-button-icon-only .ui-icon, .ui-button-text-icon .ui-icon, .ui-button-text-icons .ui-icon, .ui-button-icons-only .ui-icon { position: absolute; top: 50%; margin-top: -8px; margin-left: 6px; }
+.ui-button-icon-only .ui-icon, .ui-button-text-icon .ui-icon, .ui-button-text-icons .ui-icon, .ui-button-icons-only .ui-icon, .ui-button-text-icon-secondary .ui-icon { position: absolute; top: 50%; margin-top: -8px; margin-left: 6px; }
 .ui-button-icon-only .ui-icon { left: 50%; margin-left: -8px; }
 .ui-button-text-icon .ui-icon-primary, .ui-button-text-icons .ui-icon-primary, .ui-button-icons-only .ui-icon-primary { left: .5em; }
-.ui-button-text-icons .ui-button-icon-secondary, .ui-button-icons-only .ui-button-icon-secondary { right: .5em; }
+.ui-button-text-icons .ui-button-icon-secondary, .ui-button-icons-only .ui-button-icon-secondary, .ui-button-text-icon-secondary .ui-button-icon-secondary { right: .5em; }
 
 /*button sets*/
 .ui-buttonset { margin-right: 7px; }

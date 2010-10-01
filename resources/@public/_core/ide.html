@@ -1,18 +1,20 @@
 <!DOCTYPE HTML>
 <html>
     <head>
-        <script type="text/javascript" src="/_core/lib/jquery.js"></script>
-        <script type="text/javascript" src="/_core/lib/jquery-ui.js"></script>
-        <script type="text/javascript" src="/_core/lib/jquery.layout.js"></script>
-        <script type="text/javascript" src="/_core/lib/jquery.cookie.js"></script>
-        <script type="text/javascript" src="/_core/lib/jquery.hotkeys.js"></script>
-        <script type="text/javascript" src="/_core/lib/jstree/jquery.jstree.js"></script>
-        <script type="text/javascript" src="/_core/lib/fulljslint.js"></script>
-        <script type="text/javascript" src="/_core/lib/nvent/core.js"></script>
         <link id="bespin_base" href="/_core/lib/bespin"/>
         <link type="text/css" rel="stylesheet" href="/_core/css/layout-default.css" />
         <link type="text/css" rel="stylesheet" href="/_core/css/jquery-ui/aristo/jquery-ui.css" />
+        <link type="text/css" rel="stylesheet" href="/_core/lib/flexigrid/css/flexigrid/flexigrid.css" />
         <link type="text/css" rel="stylesheet" href="/_core/css/ide.css" />
+        <script src="/_core/lib/jquery.js"></script>
+        <script src="/_core/lib/jquery-ui.js"></script>
+        <script src="/_core/lib/jquery.layout.js"></script>
+        <script src="/_core/lib/jquery.cookie.js"></script>
+        <script src="/_core/lib/jquery.hotkeys.js"></script>
+        <script src="/_core/lib/jstree/jquery.jstree.js"></script>
+        <script src="/_core/lib/fulljslint.js"></script>
+        <script src="/_core/lib/flexigrid/flexigrid.js"></script>
+        <script src="/_core/lib/nvent/core.js"></script>
         <script src="/_core/lib/bespin/BespinEmbedded.js"></script>
         <script>
             //var ideEditor = null;
@@ -23,16 +25,16 @@
             //var defaultBespinLoaded = false;
             
             var currentTabId = "";
-            var tabIdToTab = {}
-            var pathToTab = {}
+            var tabIdToTab = {};
+            var pathToTab = {};
             var currentTab = null;
             
             function resizeContent(){
                 $("#ide-tabs").width($("#content-pane").width());
-                $("#" + currentTabId).height($("#content-pane").height()-$("#ide-tabs").outerHeight())
+                $("#" + currentTabId).height($("#content-pane").height()-$("#ide-tabs").outerHeight());
                 $("#" + currentTabId).width($("#content-pane").width());
                 var tab = currentEditorTab();
-                if (tab != null){
+                if (tab !== null){
                     tab.editor.dimensionsChanged();
                 }
                 //contentReady = true;
@@ -71,7 +73,7 @@
             window.onBespinLoad = function() {
                 bespinReady = true;
                 //loadDefaultBespin();
-            }
+            };
             
             $(function () {
                 var outerLayout = $("body").layout({
@@ -85,14 +87,14 @@
                         //ideEditor.dimensionsChanged();
                         //console.log("resize");
                     }
-                })
+                });
                 var innerLayout = $("div.ui-layout-center").layout({
                     center__paneSelector: ".inner-center",
                     south__paneSelector: ".inner-south",
                     onresize: function(){
                         resizeContent();
                     }
-                })
+                });
                 $('#resource-browser').jstree({
                     "core": {
                         "animation": 100
@@ -116,8 +118,8 @@
                                         $("#content-pane").tabs("select",tab.id);
                                         $.getJSON("/_core/file.json?path="+tab.path,function(data){
                                             if (data.result.type === "file"){
-                                                var reTabLine = /^ *(\t *)+/mg
-                                                var reTab = /\t/g
+                                                var reTabLine = /^ *(\t *)+/mg;
+                                                var reTab = /\t/g;
                                                 var tabSpaces = "";
                                                 for (var i = 0; i < ideTabStop; i++){
                                                     tabSpaces = tabSpaces + " ";
@@ -140,8 +142,8 @@
                                             } else {
                                                 tab.editor.value = "";
                                             }
-                                        })
-                                    })
+                                        });
+                                    });
                                 }
                             }
                         }
@@ -153,7 +155,7 @@
                                 if (n.attr){
                                     return {path:n.attr("path")};
                                 } else {
-                                    return {}
+                                    return {};
                                 }
                             },
                             "success":function(data){
@@ -201,6 +203,10 @@
                 
                 $(".editor-debug").button().click(function(){
                     reportErrors();
+                })
+                
+                $(".editor-new").button({icons: {secondary: 'ui-icon-triangle-1-s'}}).click(function(){
+                    //addEditor("new","","",callback)
                 })
 /*
                 editor = new bespin.editor.Component('ide-editor', {
@@ -312,16 +318,29 @@
                     if (isOkay){
                         log.append("Good job!");
                     } else {
-                        log.append("<div>You have " + JSLINT.errors.length + " error" + (JSLINT.errors.length == 1 ? "" : "s") + "...</div>");
+                        //log.append("<div>You have " + JSLINT.errors.length + " error" + (JSLINT.errors.length == 1 ? "" : "s") + "...</div>");
+                        var logTable = $('<table><thead><tr><th width="200">Description</th><th width="100">Location</th></tr></thead></table>');
+                        log.append(logTable);
+                        var logBody = $("<tbody></tbody"); 
+                        logTable.append(logBody);
                         for (var i = 0; i < JSLINT.errors.length; i++){
                             var error = JSLINT.errors[i];
-                            var errorDiv = $('<div style="cursor:pointer;" id="error_' + error.line + "_" + error.character + '" ' + 'data-row="' + (error.line - 1) + '" data-column="' + (error.character - 1) + '">');
-                            errorDiv.append(error.line + ":" + error.character + " " + error.reason);
-                            $("#debug-pane").append(errorDiv);
-                            errorDiv.click(function(){
-                                tab.editor.setCursor({row:$(this).attr("data-row"),col:$(this).attr("data-column")})
+                            //var errorDiv = $('<div style="cursor:pointer;" id="error_' + error.line + "_" + error.character + '" ' + 'data-row="' + (error.line - 1) + '" data-column="' + (error.character - 1) + '">');
+                            //errorDiv.append(error.line + ":" + error.character + " " + error.reason);
+                            //$("#debug-pane").append(errorDiv);
+                            var errorRow = $('<tr id="error_' + error.line + "_" + error.character + '" ' + 'data-row="' + (error.line - 1) + '" data-column="' + (error.character - 1) + '><td>' + error.reason + '</td><td>' + error.line + ':' + error.character + '</td></tr>');
+                            logBody.append(errorRow);
+                            
+                            //errorDiv.click(function(){
+                            errorRow.click(function(){
+                                //tab.editor.setCursor({row:$(this).attr("data-row"),col:$(this).attr("data-column")})
+                                var row = parseInt($(this).attr("data-row"));
+                                var column = parseInt($(this).attr("data-column"));
+                                tab.editor.setCursor({row:row,col:column});
+                                currentEditorTab().editor.selection = {start:{row:row,col:0},end:{row:row+1,col:0}};
                             });
                         }
+                        logTable.flexigrid({height:'auto',striped:false});
                     }
                 }
             }
@@ -348,6 +367,20 @@
         <div class="ui-layout-north">
             <a class="server-restart" href="#">Restart</a>
             <a class="server-kill" href="#">Kill</a>
+            <a class="editor-new" href="#">New</a>
+            <!--
+            <ul class="the_menu">
+                <li><a href="#">A Website #1</a></li>
+                <li><a href="#">A Website #2</a></li>
+                <li><a href="#">A Link #1</a></li>
+                <li><a href="#">A Link #2</a></li>
+                <li><a href="#">A Website #3</a></li>
+                <li><a href="#">A Website #4</a></li>
+                
+                <li><a href="#">A Link #3</a></li>
+                <li><a href="#">A Link #4</a></li>
+            </ul>
+            -->
             <a class="server-save" href="#">Save</a>
             <a class="editor-debug" href="#">Debug</a>
         </div>
@@ -384,7 +417,7 @@
                 <div style="padding: 0px; margin: 0px; border: 0px;" id="home"><br/>Welcome to the awesome node.js IDE!</div>
                 <!--<div style="padding: 0px; margin: 0px; border: 0px;" id="ide-editor-0"></div>-->
             </div>
-            <div id="debug-pane" class="inner-south">
+            <div id="debug-pane" class="inner-south" style="padding: 0px;">
                 Debugging goes here.
             </div>
         </div>

@@ -5,3 +5,7 @@
 #resource-browser {
     background-color: #eeeeee;
 }
+
+.editor-new-menu {
+    display: none;
+}
