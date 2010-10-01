@@ -73,15 +73,23 @@
             }
             
             $(function () {
-                var layout = $("body").layout({
+                var outerLayout = $("body").layout({
                     north__size: 55,
                     onresize: function(){
-                        resizeContent();
-                        if (currentTab != null && typeof(currentTab.editor)!=="undefined"){
-                            currentTab.editor.dimensionsChanged();
-                        }
+                        //setTimeout(resizeContent,1000);
+                        //resizeContent();
+                        //if (currentTab != null && typeof(currentTab.editor)!=="undefined"){
+                        //    currentTab.editor.dimensionsChanged();
+                        //}
                         //ideEditor.dimensionsChanged();
                         //console.log("resize");
+                    }
+                })
+                var innerLayout = $("div.ui-layout-center").layout({
+                    center__paneSelector: ".inner-center",
+                    south__paneSelector: ".inner-south",
+                    onresize: function(){
+                        resizeContent();
                     }
                 })
                 $('#resource-browser').jstree({
@@ -328,21 +336,28 @@
                 </ul>
             </div>
         </div>
+        <!--
         <div class="ui-layout-south">
             Nothing here yet!
         </div>
+        -->
         <!--<div class="ui-layout-east">East</div>-->
-        <div id="content-pane" class="ui-layout-center" style="overflow: hidden; padding: 0px;">
-            <!--
-            <div id="ide-editor" class="bespin" data-bespinoptions='{ "stealFocus":true, "syntax": "js" }'></div>
+        <div class="ui-layout-center"  style="overflow: hidden; padding: 0px;">
+            <div id="content-pane" class="inner-center" style="overflow: hidden; padding: 0px;">
+                <!--
+                <div id="ide-editor" class="bespin" data-bespinoptions='{ "stealFocus":true, "syntax": "js" }'></div>
+                </div>
+                -->
+                <ul id="ide-tabs" style="padding: 0px;  margin:0px;">
+                    <li><a href="#home">Home</a></li>
+                    <!--<li><a href="#ide-editor-0">IDE</a></li>-->
+                </ul>
+                <div style="padding: 0px; margin: 0px; border: 0px;" id="home"><br/>Welcome to the awesome node.js IDE!</div>
+                <!--<div style="padding: 0px; margin: 0px; border: 0px;" id="ide-editor-0"></div>-->
             </div>
-            -->
-            <ul id="ide-tabs" style="padding: 0px;  margin:0px;">
-                <li><a href="#home">Home</a></li>
-                <!--<li><a href="#ide-editor-0">IDE</a></li>-->
-            </ul>
-            <div style="padding: 0px; margin: 0px; border: 0px;" id="home"><br/>Welcome to the awesome node.js IDE!</div>
-            <!--<div style="padding: 0px; margin: 0px; border: 0px;" id="ide-editor-0"></div>-->
+            <div class="inner-south">
+                Debugging goes here.
+            </div>
         </div>
     </body>
 </html>
