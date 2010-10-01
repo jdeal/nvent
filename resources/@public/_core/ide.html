@@ -220,6 +220,11 @@
                         currentTabId = ui.panel.id;
                         currentTab = tabIdToTab[currentTabId]
                         resizeContent();
+                    },
+                    remove: function(event, ui) {
+                        var tab = tabIdToTab[ui.panel.id];
+                        delete tabIdToTab[ui.panel.id];
+                        delete pathToTab[tab.path];                        
                     }
                 });
                 resizeContent();
@@ -235,9 +240,10 @@
                 $("#content-pane").tabs("add","#" + ideEditorId,name);
                 //'<span class="removetab ui-icon ui-icon-circle-close" style="float:right; margin: -2px -10px 0px 3px; cursor:pointer;"></span>'
                 $("a[href=#" + ideEditorId + "] span").css("float","left")
-                $("a[href=#" + ideEditorId + "]").append('<span class="removetab ui-icon ui-icon-circle-close" style="float:right; margin: -2px -10px 0px 3px; cursor:pointer;"></span>').click(function(){
-                    $("#content-pane").tabs("remove",$(this).parent().index());
-                    alert($(this).parent()[0].nodeName)
+                var closeIcon = $('<span class="removetab ui-icon ui-icon-circle-close" style="float:right; margin: -2px -10px 0px 3px; cursor:pointer;"></span>');
+                $("a[href=#" + ideEditorId + "]").append(closeIcon);
+                closeIcon.click(function(){
+                    $("#content-pane").tabs("remove",$(this).parent().parent().index());
                 })
                 $("#content-pane").tabs("select",ideEditorId);
                 tab.id = ideEditorId;
