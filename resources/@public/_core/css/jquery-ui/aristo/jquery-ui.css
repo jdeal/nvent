@@ -315,37 +315,37 @@
 
 /* === Menu === */
 .ui-menu {
-	list-style:none;
-	padding: 2px;
-	margin: 0;
-	display:block;
+    list-style:none;
+    padding: 2px;
+    margin: 0;
+    display:block;
 }
 .ui-menu .ui-menu {
-	margin-top: -3px;
+    margin-top: -3px;
 }
 .ui-menu .ui-menu-item {
-	margin:0;
-	padding: 0;
-	width: 100%;
+    margin:0;
+    padding: 0;
+    width: 100%;
 }
 .ui-menu .ui-menu-item a {
-	text-decoration:none;
-	display:block;
-	border: 0px none;
-	padding:.2em .4em;
-	line-height:1.5;
-	-moz-border-radius: 0px; -webkit-border-radius: 0px; border-radius: 0px;
+    text-decoration:none;
+    display:block;
+    border: 0px none;
+    padding:.2em .4em;
+    line-height:1.5;
+    -moz-border-radius: 0px; -webkit-border-radius: 0px; border-radius: 0px;
 }
 .ui-menu .ui-menu-item a.ui-state-hover,
 .ui-menu .ui-menu-item a.ui-state-active {
-	background: #5f83b9;
-	color: #FFFFFF;
-	text-shadow: 0px 1px 1px #234386;
-	font-weight: normal;
+    background: #5f83b9;
+    color: #FFFFFF;
+    text-shadow: 0px 1px 1px #234386;
+    font-weight: normal;
 }
 
 /* === Button === */
-.ui-button { display: inline-block;  position: relative; padding: 0; margin-right: .1em; text-decoration: none !important; cursor: pointer; text-align: center; zoom: 1; overflow: visible; border: 0px none !important; -moz-border-radius: 0px; -webkit-border-radius: 0px; border-radius: 0px; } /* the overflow property removes extra width in IE */
+.ui-button { display: inline-block;  position: relative; padding: 0; margin-right: .1em; text-decoration: none !important; cursor: pointer; text-align: center; zoom: 1; overflow: visible; border: 0px none !important; /*-moz-border-radius: 0px; -webkit-border-radius: 0px; border-radius: 0px;*/ } /* the overflow property removes extra width in IE */
 .ui-button-icon-only { width: 2.2em; } /* to make room for the icon, a width needs to be set here */
 button.ui-button-icon-only { width: 2.4em; } /* button elements seem to need a little more width */
 .ui-button-icons-only { width: 3em; } 
