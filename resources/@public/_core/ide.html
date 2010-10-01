@@ -7,6 +7,7 @@
         <script type="text/javascript" src="/_core/lib/jquery.cookie.js"></script>
         <script type="text/javascript" src="/_core/lib/jquery.hotkeys.js"></script>
         <script type="text/javascript" src="/_core/lib/jstree/jquery.jstree.js"></script>
+        <script type="text/javascript" src="/_core/lib/fulljslint.js"></script>
         <script type="text/javascript" src="/_core/lib/nvent/core.js"></script>
         <link id="bespin_base" href="/_core/lib/bespin"/>
         <link type="text/css" rel="stylesheet" href="/_core/css/layout-default.css" />
@@ -197,6 +198,10 @@
                     }
                     return false;
                 });
+                
+                $(".editor-debug").button().click(function(){
+                    reportErrors();
+                })
 /*
                 editor = new bespin.editor.Component('ide-editor', {
                     language		: "html",
@@ -297,6 +302,29 @@
                 }
                 return null;
             }
+            
+            function reportErrors(){
+                var log = $("#debug-pane")
+                log.html("")
+                var tab = currentEditorTab();
+                if (tab != null){
+                    var isOkay = JSLINT(tab.editor.value);
+                    if (isOkay){
+                        log.append("Good job!");
+                    } else {
+                        log.append("<div>You have " + JSLINT.errors.length + " error" + (JSLINT.errors.length == 1 ? "" : "s") + "...</div>");
+                        for (var i = 0; i < JSLINT.errors.length; i++){
+                            var error = JSLINT.errors[i];
+                            var errorDiv = $('<div style="cursor:pointer;" id="error_' + error.line + "_" + error.character + '" ' + 'data-row="' + (error.line - 1) + '" data-column="' + (error.character - 1) + '">');
+                            errorDiv.append(error.line + ":" + error.character + " " + error.reason);
+                            $("#debug-pane").append(errorDiv);
+                            errorDiv.click(function(){
+                                tab.editor.setCursor({row:$(this).attr("data-row"),col:$(this).attr("data-column")})
+                            });
+                        }
+                    }
+                }
+            }
 
 
             /*
@@ -321,6 +349,7 @@
             <a class="server-restart" href="#">Restart</a>
             <a class="server-kill" href="#">Kill</a>
             <a class="server-save" href="#">Save</a>
+            <a class="editor-debug" href="#">Debug</a>
         </div>
         <div class="ui-layout-west">
             <div id="resource-browser">
@@ -355,7 +384,7 @@
                 <div style="padding: 0px; margin: 0px; border: 0px;" id="home"><br/>Welcome to the awesome node.js IDE!</div>
                 <!--<div style="padding: 0px; margin: 0px; border: 0px;" id="ide-editor-0"></div>-->
             </div>
-            <div class="inner-south">
+            <div id="debug-pane" class="inner-south">
                 Debugging goes here.
             </div>
         </div>
