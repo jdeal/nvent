@@ -212,15 +212,26 @@
                         "animation": 100
                     },
                     "themes": {
-                        "theme": "default",
+                        "theme": "nvent",
                         "dots": false,
                         "icons": true
                     },
                     "types" : {
+                        "valid_children": ["default","folder","file"],
                         "types" : {
-                            "default" : {
-                                "valid_children" : [ "default" ],
-                                //"select_node" : function (e) {this.toggle_node(e);return false;}
+                            "folder": {
+                                "icon" : {
+                                    "image": "/_core/lib/jstree/themes/nvent/d.png",
+                                    "position": "-19px -74px"
+                                },
+                                "valid_children": ["default","folder","file"]
+                            },
+                            "file": {
+                                "icon" : {
+                                    "image": "/_core/lib/jstree/themes/nvent/d.png",
+                                    "position": "-1px -74px"
+                                },
+                                "valid_children": [],
                                 "select_node": function (n){
                                     //alert(n.attr("path"))
                                     //this.select_node(n)
@@ -257,6 +268,13 @@
                                         });
                                     });
                                 }
+                            },
+                            "default" : {
+                                "icon" : {
+                                    "image": "/_core/lib/jstree/themes/nvent/d.png",
+                                    "position": "-19px -74px"
+                                },
+                                "valid_children": ["default","folder","file"]
                             }
                         }
                     },
@@ -271,8 +289,53 @@
                                 }
                             },
                             "success":function(data){
-                                return data.result;
+                                var result = data.result;
+                                for (var i = 0; i < result.length; i++){
+                                    if (typeof(result[i].state)==="undefined"){
+                                        result[i].attr.rel = "file";
+                                    } else {
+                                        result[i].attr.rel = "folder";
+                                    }
+                                }
+                                return result;
                             }
+                        }
+                    },
+                    "contextmenu": {
+                        items: function(n){
+                            var path = $(n).attr("path");
+                            var type = $(n).attr("rel");
+                            if (type==="folder"){
+                                return {
+                                    "create": {
+                                        "submenu": {
+                                            "newFolder": {
+                                                "label": "Folder",
+                                                "action": function(node){
+                                                    this.create(node,"inside",{attr:{rel:"folder",state:"closed"}});
+                                                }
+                                            },
+                                            "newFile": {
+                                                "label": "File"
+                                            }
+                                        },
+                                        "label": "New",
+                                        "action": function(){
+                                            //this.create(null,"inside",
+                                        }
+                                    },
+                                    rename: false,
+                                    remove: false,
+                                    ccp: false
+                                };
+                            }
+                        }
+                    },
+                    "sort": function(a,b){
+                        if ($(a).attr("rel") === $(b).attr("rel")){
+                            return this.get_text(a) > this.get_text(b) ? 1 : -1;
+                        } else {
+                            return $(a).attr("rel") === "folder" ? -1 : 1;
                         }
                     },
                     "plugins": [
@@ -280,7 +343,10 @@
                         "json_data",
                         "types",
                         "ui",
-                        "dnd"
+                        "dnd",
+                        "crrm",
+                        "contextmenu",
+                        "sort"
                     ]
                 });
                 
@@ -380,7 +446,7 @@
             </ul>
             -->
             <a class="server-save" href="#">Save</a>
-            <a class="editor-debug" href="#">Check Code</a>
+            <a class="editor-debug" href="#">Check code</a>
         </div>
         <div class="ui-layout-west">
             <div id="resource-browser">
