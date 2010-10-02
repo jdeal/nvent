@@ -75,9 +75,124 @@
                 //loadDefaultBespin();
             };
             
+            function adjustDimension(dimension,max,min,multiplier){
+                return ((dimension * multiplier) > max) ? max : ((dimension * multiplier) < min) ? min : (dimension * multiplier);
+            }
+            
+            var headerHeight = 55;
+            var explorerWidth = adjustDimension($(window).width(),500,200,0.3);
+            var debugHeight = adjustDimension($(window).height(),300,100,0.2);
+            
+            var ideEditorIndex = 0;
+            
+            function addEditor(name,content,syntax,callback){
+                var tab = {}
+                ideEditorIndex++;
+                var ideEditorId = "ide-editor-" + ideEditorIndex;
+                $("#content-pane").append('<div style="padding: 0px; margin: 0px; border: 0px;" id="' + ideEditorId + '"></div>')
+                $("#content-pane").tabs("add","#" + ideEditorId,name);
+                //'<span class="removetab ui-icon ui-icon-circle-close" style="float:right; margin: -2px -10px 0px 3px; cursor:pointer;"></span>'
+                $("a[href=#" + ideEditorId + "] span").css("float","left")
+                var closeIcon = $('<span class="removetab ui-icon ui-icon-circle-close" style="float:right; margin: -2px -10px 0px 3px; cursor:pointer;"></span>');
+                $("a[href=#" + ideEditorId + "]").append(closeIcon);
+                closeIcon.click(function(){
+                    $("#content-pane").tabs("remove",$(this).parent().parent().index());
+                })
+                $("#content-pane").tabs("select",ideEditorId);
+                tab.id = ideEditorId;
+                tabIdToTab[ideEditorId] = tab;
+                currentTab = tab;
+                resizeContent();
+                attachBespin(ideEditorId,content,syntax,function(env){
+                    tab.editor = env.editor;
+                    tab.editor.dimensionsChanged();
+                    if (typeof(callback)!=="undefined"){
+                        callback(tab);
+                    }
+                });
+            }
+
+            function addEditorAfterBespinLoaded(name,content,syntax,callback){
+                if (bespinReady){
+                    addEditor(name,content,syntax,callback);
+                } else {
+                    setTimeout(function(){addEditor(name,content,syntax,callback)},100);
+                }
+            }
+
+            function tabForPath(path,callback){
+                if (path in pathToTab){
+                    callback(pathToTab[path]);
+                } else {
+                    var pathParts = path.split("/")
+                    addEditor(pathParts[pathParts.length - 1],"","",function(tab){
+                        tab.path = path;
+                        pathToTab[path] = tab;
+                        callback(tab)
+                    })
+                }
+            }
+            
+            function currentEditorTab(){
+                if (currentTab != null){
+                    if (typeof(currentTab.editor)!=="undefined"){
+                        return currentTab;
+                    }
+                }
+                return null;
+            }
+            
+            var codeQuality = {
+                "clean": 2,
+                "warn": 1,
+                "error": 0
+            }
+            
+            function checkCodeQuality(callback){
+                var log = $("#debug-pane")
+                log.html("")
+                var tab = currentEditorTab();
+                var quality = codeQuality.error;
+                if (tab != null){
+                    var isOkay = JSLINT(tab.editor.value);
+                    if (isOkay){
+                        quality = codeQuality.clean;
+                        log.append("The code is clean.");
+                    } else {
+                        //log.append("<div>You have " + JSLINT.errors.length + " error" + (JSLINT.errors.length == 1 ? "" : "s") + "...</div>");
+                        var logTable = $('<table><thead><tr><th width="200">Description</th><th width="100">Location</th></tr></thead></table>');
+                        log.append(logTable);
+                        var logBody = $("<tbody></tbody"); 
+                        logTable.append(logBody);
+                        for (var i = 0; i < JSLINT.errors.length; i++){
+                            var error = JSLINT.errors[i];
+                            //var errorDiv = $('<div style="cursor:pointer;" id="error_' + error.line + "_" + error.character + '" ' + 'data-row="' + (error.line - 1) + '" data-column="' + (error.character - 1) + '">');
+                            //errorDiv.append(error.line + ":" + error.character + " " + error.reason);
+                            //$("#debug-pane").append(errorDiv);
+                            var errorRow = $('<tr id="error_' + error.line + "_" + error.character + '" ' + 'data-row="' + (error.line - 1) + '" data-column="' + (error.character - 1) + '><td>' + error.reason + '</td><td>' + error.line + ':' + error.character + '</td></tr>');
+                            logBody.append(errorRow);
+                            
+                            //errorDiv.click(function(){
+                            errorRow.click(function(){
+                                //tab.editor.setCursor({row:$(this).attr("data-row"),col:$(this).attr("data-column")})
+                                var row = parseInt($(this).attr("data-row"));
+                                var column = parseInt($(this).attr("data-column"));
+                                tab.editor.setCursor({row:row,col:column});
+                                currentEditorTab().editor.selection = {start:{row:row,col:0},end:{row:row+1,col:0}};
+                            });
+                        }
+                        logTable.flexigrid({height:'auto',striped:false});
+                    }
+                }
+                if (typeof(callback) !== "undefined"){
+                    callback(quality);
+                }
+            }
+            
             $(function () {
                 var outerLayout = $("body").layout({
-                    north__size: 55,
+                    north__size: headerHeight,
+                    west__size: explorerWidth,
                     onresize: function(){
                         //setTimeout(resizeContent,1000);
                         //resizeContent();
@@ -91,6 +206,7 @@
                 var innerLayout = $("div.ui-layout-center").layout({
                     center__paneSelector: ".inner-center",
                     south__paneSelector: ".inner-south",
+                    south__size: debugHeight,
                     onresize: function(){
                         resizeContent();
                     }
@@ -172,6 +288,23 @@
                     ]
                 });
                 
+                $("#content-pane").tabs()
+                $("#content-pane").tabs("select",1)
+                currentTabId = "ide-editor-0";
+                $("#content-pane").tabs({
+                    show: function(event, ui) {
+                        currentTabId = ui.panel.id;
+                        currentTab = tabIdToTab[currentTabId]
+                        resizeContent();
+                    },
+                    remove: function(event, ui) {
+                        var tab = tabIdToTab[ui.panel.id];
+                        delete tabIdToTab[ui.panel.id];
+                        delete pathToTab[tab.path];                        
+                    }
+                });
+                resizeContent();
+                
                 $(".server-restart").button().click(function(){
                     $.getJSON("/_core/restart.json",function(data){
                         window.location.reload();
@@ -194,173 +327,42 @@
                     //alert(ideEditor.value)
                     var tab = currentEditorTab();
                     if (tab != null){
-                        $.post("/_core/save.json",{path:tab.path,content:tab.editor.value},function(data){
-
+                        checkCodeQuality(function(quality){
+                            var saveCode = function(){
+                                $.post("/_core/save.json",{path:tab.path,content:tab.editor.value},function(data){
+                                })
+                            }
+                            if (quality == codeQuality.clean){
+                                saveCode();
+                            } else {
+                                $( "#dialog-save-error" ).dialog({
+                                    resizable: false,
+                                    height:140,
+                                    modal: true,
+                                    buttons: {
+                                        "Save anyway": function() {
+                                            $( this ).dialog( "close" );
+                                            saveCode();
+                                        },
+                                        "Cancel": function() {
+                                            $( this ).dialog( "close" );
+                                        }
+                                    }
+                                });
+                            }
                         })
                     }
                     return false;
                 });
                 
                 $(".editor-debug").button().click(function(){
-                    reportErrors();
+                    checkCodeQuality();
                 })
                 
                 $(".editor-new").button({icons: {secondary: 'ui-icon-triangle-1-s'}}).click(function(){
                     //addEditor("new","","",callback)
                 })
-/*
-                editor = new bespin.editor.Component('ide-editor', {
-                    language		: "html",
-                    loadfromdiv 	: false,
-                    set 			: {
-                        fontsize		: 10,
-                        strictlines		: 'on',
-                        tabsize 		: 4,
-                        highlightline	: 'on',
-                        syntaxcheck		: 'on',
-                        trimonsave		: 'on',
-                        codecomplete	: 'on'
-                    }
-                });
-*/
-                //bespin.useBespin("ide-editor")
-
-                /*
-
-*/
-
-
-                //alert(editor)
-                
-                $("#content-pane").tabs()
-                $("#content-pane").tabs("select",1)
-                currentTabId = "ide-editor-0";
-                $("#content-pane").tabs({
-                    show: function(event, ui) {
-                        currentTabId = ui.panel.id;
-                        currentTab = tabIdToTab[currentTabId]
-                        resizeContent();
-                    },
-                    remove: function(event, ui) {
-                        var tab = tabIdToTab[ui.panel.id];
-                        delete tabIdToTab[ui.panel.id];
-                        delete pathToTab[tab.path];                        
-                    }
-                });
-                resizeContent();
             });
-            
-            var ideEditorIndex = 0;
-            
-            function addEditor(name,content,syntax,callback){
-                var tab = {}
-                ideEditorIndex++;
-                var ideEditorId = "ide-editor-" + ideEditorIndex;
-                $("#content-pane").append('<div style="padding: 0px; margin: 0px; border: 0px;" id="' + ideEditorId + '"></div>')
-                $("#content-pane").tabs("add","#" + ideEditorId,name);
-                //'<span class="removetab ui-icon ui-icon-circle-close" style="float:right; margin: -2px -10px 0px 3px; cursor:pointer;"></span>'
-                $("a[href=#" + ideEditorId + "] span").css("float","left")
-                var closeIcon = $('<span class="removetab ui-icon ui-icon-circle-close" style="float:right; margin: -2px -10px 0px 3px; cursor:pointer;"></span>');
-                $("a[href=#" + ideEditorId + "]").append(closeIcon);
-                closeIcon.click(function(){
-                    $("#content-pane").tabs("remove",$(this).parent().parent().index());
-                })
-                $("#content-pane").tabs("select",ideEditorId);
-                tab.id = ideEditorId;
-                tabIdToTab[ideEditorId] = tab;
-                currentTab = tab;
-                resizeContent();
-                attachBespin(ideEditorId,content,syntax,function(env){
-                    tab.editor = env.editor;
-                    tab.editor.dimensionsChanged();
-                    if (typeof(callback)!=="undefined"){
-                        callback(tab);
-                    }
-                });
-            }
-
-            function addEditorAfterBespinLoaded(name,content,syntax,callback){
-                if (bespinReady){
-                    addEditor(name,content,syntax,callback);
-                } else {
-                    setTimeout(function(){addEditor(name,content,syntax,callback)},100);
-                }
-            }
-
-            function tabForPath(path,callback){
-                if (path in pathToTab){
-                    callback(pathToTab[path]);
-                } else {
-                    var pathParts = path.split("/")
-                    addEditor(pathParts[pathParts.length - 1],"","",function(tab){
-                        tab.path = path;
-                        pathToTab[path] = tab;
-                        callback(tab)
-                    })
-                }
-            }
-            
-            function currentEditorTab(){
-                if (currentTab != null){
-                    if (typeof(currentTab.editor)!=="undefined"){
-                        return currentTab;
-                    }
-                }
-                return null;
-            }
-            
-            function reportErrors(){
-                var log = $("#debug-pane")
-                log.html("")
-                var tab = currentEditorTab();
-                if (tab != null){
-                    var isOkay = JSLINT(tab.editor.value);
-                    if (isOkay){
-                        log.append("Good job!");
-                    } else {
-                        //log.append("<div>You have " + JSLINT.errors.length + " error" + (JSLINT.errors.length == 1 ? "" : "s") + "...</div>");
-                        var logTable = $('<table><thead><tr><th width="200">Description</th><th width="100">Location</th></tr></thead></table>');
-                        log.append(logTable);
-                        var logBody = $("<tbody></tbody"); 
-                        logTable.append(logBody);
-                        for (var i = 0; i < JSLINT.errors.length; i++){
-                            var error = JSLINT.errors[i];
-                            //var errorDiv = $('<div style="cursor:pointer;" id="error_' + error.line + "_" + error.character + '" ' + 'data-row="' + (error.line - 1) + '" data-column="' + (error.character - 1) + '">');
-                            //errorDiv.append(error.line + ":" + error.character + " " + error.reason);
-                            //$("#debug-pane").append(errorDiv);
-                            var errorRow = $('<tr id="error_' + error.line + "_" + error.character + '" ' + 'data-row="' + (error.line - 1) + '" data-column="' + (error.character - 1) + '><td>' + error.reason + '</td><td>' + error.line + ':' + error.character + '</td></tr>');
-                            logBody.append(errorRow);
-                            
-                            //errorDiv.click(function(){
-                            errorRow.click(function(){
-                                //tab.editor.setCursor({row:$(this).attr("data-row"),col:$(this).attr("data-column")})
-                                var row = parseInt($(this).attr("data-row"));
-                                var column = parseInt($(this).attr("data-column"));
-                                tab.editor.setCursor({row:row,col:column});
-                                currentEditorTab().editor.selection = {start:{row:row,col:0},end:{row:row+1,col:0}};
-                            });
-                        }
-                        logTable.flexigrid({height:'auto',striped:false});
-                    }
-                }
-            }
-
-
-            /*
-            window.onBespinLoad = function() {
-                var edit = $("#ide-editor")[0];
-                // Get the environment variable.
-                var env = edit.bespin;
-                env.settings.set("tabstop",4);
-                //env.settings.set("tabmode","on");
-                // Get the editor.
-                ideEditor = env.editor;
-                // Change the value and move to the secound line.
-                //editor.value = "Initial Content\nWith 2 lines";
-                //editor.setLineNumber(2);
-                //alert(bespin)
-            };
-            */
         </script>
     </head>
     <body>
@@ -382,7 +384,7 @@
             </ul>
             -->
             <a class="server-save" href="#">Save</a>
-            <a class="editor-debug" href="#">Debug</a>
+            <a class="editor-debug" href="#">Check Code</a>
         </div>
         <div class="ui-layout-west">
             <div id="resource-browser">
@@ -420,6 +422,9 @@
             <div id="debug-pane" class="inner-south" style="padding: 0px;">
                 Debugging goes here.
             </div>
+        </div>
+        <div style="display:none">
+            <div id="dialog-save-error" title="Are you sure?">There were errors found in this code.</div>
         </div>
     </body>
 </html>
