@@ -185,6 +185,35 @@
                 }
             }
             
+            function displayCodeErrors(errors){
+                var log = $("#debug-pane");
+                log.html("");
+                if (errors.length === 0){
+                    log.append("The code is clean.");
+                } else {
+                    var logTable = $('<table><thead><tr><th width="200">Description<\/th><th width="100">Location<\/th><\/tr><\/thead><\/table>');
+                    log.append(logTable);
+                    var logBody = $("<tbody><\/tbody"); 
+                    logTable.append(logBody);
+                    var gotoErrorPosition = function(){
+                        var row = parseInt($(this).attr("data-row"),10);
+                        var column = parseInt($(this).attr("data-column"),10);
+                        currentEditorTab().editor.setCursor({row:row,col:column});
+                        currentEditorTab().editor.selection = {start:{row:row,col:0},end:{row:row+1,col:0}};
+                    };
+                    for (var i = 0; i < errors.length; i++){
+                        var error = errors[i];
+                        if (error !== null){
+                            // why does JSLINT sometimes return nulls?
+                            var errorRow = $('<tr id="error_' + error.line + "_" + error.character + '" ' + 'data-row="' + (error.line - 1) + '" data-column="' + (error.character - 1) + '><td>' + error.reason + '<\/td><td>' + error.line + ':' + error.character + '<\/td><\/tr>');
+                            logBody.append(errorRow);
+                            errorRow.click(gotoErrorPosition);
+                        }
+                    }
+                    logTable.flexigrid({height:'auto',striped:false});
+                }
+            }
+            
             $(function () {
                 var outerLayout = $("body").layout({
                     north__size: headerHeight,
@@ -462,6 +491,25 @@
                     //addEditor("new","","",callback)
                 });
                 */
+                
+                var worker = new Worker("lib/ide/worker.js");
+                
+                worker.onmessage = function(e){
+                    var data = JSON.parse(e.data);
+                    //$("#debug-pane").html(JSON.stringify(data.errors));
+                    displayCodeErrors(data.errors);
+                };
+                
+                setInterval(function(){
+                    var tab = currentEditorTab();
+                    if (tab !== null){
+                        worker.postMessage(JSON.stringify({
+                            type:"checkCodeQuality",
+                            code:tab.editor.value
+                        }));
+                    }
+                },1000);
+
             });
         </script>
     </head>
