@@ -316,7 +316,10 @@
                                                 }
                                             },
                                             "newFile": {
-                                                "label": "File"
+                                                "label": "File",
+                                                "action": function(node){
+                                                    this.create(node,"inside",{attr:{rel:"file"}});
+                                                }
                                             }
                                         },
                                         "label": "New",
@@ -351,16 +354,28 @@
                 });
                 
                 $('#resource-browser').bind("create.jstree",function(e,data){
-                    alert(data.args[0].attr("path"));
-                    /*
-                    $.getJSON("/_core/save.json",function(data){
+                    //alert("*" + data.rslt.obj.attr("rel"));
+                    //alert(data.rslt.parent.attr("path") + "/" + data.rslt.name);
+                    //alert(data.args[0].attr("path") + "/" + data.rslt.name);
+                    //alert(data.rslt.parent.attr("path"));
+                    //alert(data.rslt.parent.name);
+                    //console.log(JSON.stringify(JSON.stringify(data.rslt)));
+                    //alert(data.args[0].attr("path"));
+                    var path = data.rslt.parent.attr("path") + "/" + data.rslt.name;
+                    //alert(data.rslt.attr("rel"));
+                    data.rslt.obj.attr("path",path);
+                    var type = data.rslt.obj.attr("rel");
+                    var contentParameter = "";
+                    if (type === "file"){
+                        contentParameter = "&content=";
+                    }
+                    $.getJSON("/_core/save.json?path="+path+contentParameter,function(data){
                         if (data.success){
-                            this.create(node,"inside",{attr:{rel:"folder",state:"closed"}});
+                            //this.create(node,"inside",{attr:{rel:"folder",state:"closed"}});
                         } else {
                             alert("problem: " + data.error_message);
                         }
                     });
-                    */
                 });
                 
                 $("#content-pane").tabs();
