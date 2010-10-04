@@ -147,44 +147,6 @@
                 "error": 0
             };
             
-            function checkCodeQuality(callback){
-                var log = $("#debug-pane");
-                log.html("");
-                var tab = currentEditorTab();
-                var quality = codeQuality.error;
-                if (tab !== null){
-                    var isOkay = JSLINT(tab.editor.value);
-                    if (isOkay){
-                        quality = codeQuality.clean;
-                        log.append("The code is clean.");
-                    } else {
-                        var logTable = $('<table><thead><tr><th width="200">Description<\/th><th width="100">Location<\/th><\/tr><\/thead><\/table>');
-                        log.append(logTable);
-                        var logBody = $("<tbody><\/tbody"); 
-                        logTable.append(logBody);
-                        var gotoErrorPosition = function(){
-                            var row = parseInt($(this).attr("data-row"),10);
-                            var column = parseInt($(this).attr("data-column"),10);
-                            tab.editor.setCursor({row:row,col:column});
-                            currentEditorTab().editor.selection = {start:{row:row,col:0},end:{row:row+1,col:0}};
-                        };
-                        for (var i = 0; i < JSLINT.errors.length; i++){
-                            var error = JSLINT.errors[i];
-                            if (error !== null){
-                                // why does JSLINT sometimes return nulls?
-                                var errorRow = $('<tr id="error_' + error.line + "_" + error.character + '" ' + 'data-row="' + (error.line - 1) + '" data-column="' + (error.character - 1) + '><td>' + error.reason + '<\/td><td>' + error.line + ':' + error.character + '<\/td><\/tr>');
-                                logBody.append(errorRow);
-                                errorRow.click(gotoErrorPosition);
-                            }
-                        }
-                        logTable.flexigrid({height:'auto',striped:false});
-                    }
-                }
-                if (typeof(callback) !== "undefined"){
-                    callback(quality);
-                }
-            }
-            
             function displayCodeErrors(errors){
                 var log = $("#debug-pane");
                 log.html("");
@@ -205,7 +167,7 @@
                         var error = errors[i];
                         if (error !== null){
                             // why does JSLINT sometimes return nulls?
-                            var errorRow = $('<tr id="error_' + error.line + "_" + error.character + '" ' + 'data-row="' + (error.line - 1) + '" data-column="' + (error.character - 1) + '><td>' + error.reason + '<\/td><td>' + error.line + ':' + error.character + '<\/td><\/tr>');
+                            var errorRow = $('<tr id="error_' + error.line + "_" + error.character + '" ' + 'data-row="' + (error.line - 1) + '" data-column="' + (error.character - 1) + '"><td>' + error.reason + '<\/td><td>' + error.line + ':' + error.character + '<\/td><\/tr>');
                             logBody.append(errorRow);
                             errorRow.click(gotoErrorPosition);
                         }
@@ -214,6 +176,47 @@
                 }
             }
             
+            function checkCodeQuality(callback){
+                var log = $("#debug-pane");
+                log.html("");
+                var tab = currentEditorTab();
+                var quality = codeQuality.error;
+                if (tab !== null){
+                    var isOkay = JSLINT(tab.editor.value);
+                    if (isOkay){
+                        quality = codeQuality.clean;
+                    }
+                    displayCodeErrors(JSLINT.errors);
+                    /*
+                        log.append("The code is clean.");
+                    } else {
+                        var logTable = $('<table><thead><tr><th width="200">Description<\/th><th width="100">Location<\/th><\/tr><\/thead><\/table>');
+                        log.append(logTable);
+                        var logBody = $("<tbody><\/tbody"); 
+                        logTable.append(logBody);
+                        var gotoErrorPosition = function(){
+                            var row = parseInt($(this).attr("data-row"),10);
+                            var column = parseInt($(this).attr("data-column"),10);
+                            tab.editor.setCursor({row:row,col:column});
+                            currentEditorTab().editor.selection = {start:{row:row,col:0},end:{row:row+1,col:0}};
+                        };
+                        for (var i = 0; i < JSLINT.errors.length; i++){
+                            var error = JSLINT.errors[i];
+                            if (error !== null){
+                                var errorRow = $('<tr id="error_' + error.line + "_" + error.character + '" ' + 'data-row="' + (error.line - 1) + '" data-column="' + (error.character - 1) + '"><td>' + error.reason + '<\/td><td>' + error.line + ':' + error.character + '<\/td><\/tr>');
+                                logBody.append(errorRow);
+                                errorRow.click(gotoErrorPosition);
+                            }
+                        }
+                        logTable.flexigrid({height:'auto',striped:false});
+                    }
+                    */
+                }
+                if (typeof(callback) !== "undefined"){
+                    callback(quality);
+                }
+            }
+                    
             $(function () {
                 var outerLayout = $("body").layout({
                     north__size: headerHeight,
@@ -499,7 +502,7 @@
                     //$("#debug-pane").html(JSON.stringify(data.errors));
                     displayCodeErrors(data.errors);
                 };
-                
+
                 setInterval(function(){
                     var tab = currentEditorTab();
                     if (tab !== null){
@@ -509,6 +512,7 @@
                         }));
                     }
                 },1000);
+                
 
             });
         </script>
