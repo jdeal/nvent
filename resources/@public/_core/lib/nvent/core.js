@@ -76,24 +76,65 @@ if (typeof(require) === "undefined") {
         return Object.prototype.toString.call(o) === '[object String]';
     };
     
-    var defaultErrorMessages = {
-        "not_implemented": "This feature is not yet implemented.",
-        "access_denied": "Access denied for this feature.",
-        "no_path": "No path specified.",
-        "invalid_path": "Invalid path.",
-        "delete_dir_error": "Could not delete directory.",
-        "delete_file_errir": "Could not delete file."
+    var isFunction = exports.isFunction = function isFunction(o){
+        return Object.prototype.toString.call(o) === "[object Function]";
     };
     
-    var error = exports.error = function error(type,message){
+    var error = exports.error = function error(name,message){
         if (isUndefined(message)){
-            if (type in defaultErrorMessages){
-                return error(type,defaultErrorMessages[type]);
+            if (isUndefined(name)){
+                return error("UnknownError");
             } else {
-                return error(type,"Error: " + type);
+                return error(name,"Error: " + name);
             }
         } else {
-            return {success:false,error:type,error_message:message};
+            return {success:false,error:{name:name,message:message}};
+        }
+    };
+    
+    var isError = exports.isError = function isError(json){
+        if ("success" in json){
+            return !json.success;
+        } else {
+            return false;
+        }
+    };
+    
+    var isSuccess = exports.isSuccess = function isErrorResponse(json){
+        return !isError(json);
+    };
+    
+    var errorName = exports.errorName = function errorName(json){
+        if (isError(json)){
+            if ("success" in json){
+                if ("error" in json && "name" in json.error){
+                    return json.error.name;
+                } else {
+                    return "UnknownError";
+                }
+            } else {
+                return "InvalidResultError";
+            }
+        } else {
+            return null;
+        }
+    };
+    
+    var errorMessage = exports.errorMessage = function errorMessage(json){
+        if (isError(json)){
+            if ("success" in json){
+                if ("error" in json && "message" in json.error){
+                    return json.error.message;
+                } else if ("error" in json && "name" in json.error){
+                    return "Error: " + json.error.name;
+                } else {
+                    return "Unknown error.";
+                }
+            } else {
+                return "Invalid result format.";
+            }
+        } else {
+            return null;
         }
     };
     
@@ -102,6 +143,16 @@ if (typeof(require) === "undefined") {
             return {success:true};
         } else {
             return {success:true,result:result};
+        }
+    };
+    
+    var successResult = exports.successResult = function successResult(json){
+        if (isError(json)){
+            return null;
+        } else if ("result" in json) {
+            return error.result;
+        } else {
+            return null;
         }
     };
 
