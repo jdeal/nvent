@@ -350,6 +350,19 @@
                     ]
                 });
                 
+                $('#resource-browser').bind("create.jstree",function(e,data){
+                    alert(data.args[0].attr("path"));
+                    /*
+                    $.getJSON("/_core/save.json",function(data){
+                        if (data.success){
+                            this.create(node,"inside",{attr:{rel:"folder",state:"closed"}});
+                        } else {
+                            alert("problem: " + data.error_message);
+                        }
+                    });
+                    */
+                });
+                
                 $("#content-pane").tabs();
                 $("#content-pane").tabs("select",1);
                 currentTabId = "ide-editor-0";
@@ -421,9 +434,11 @@
                     checkCodeQuality();
                 });
                 
+                /*
                 $(".editor-new").button({icons: {secondary: 'ui-icon-triangle-1-s'}}).click(function(){
                     //addEditor("new","","",callback)
                 });
+                */
             });
         </script>
     </head>
@@ -431,7 +446,7 @@
         <div class="ui-layout-north">
             <a class="server-restart" href="#">Restart</a>
             <a class="server-kill" href="#">Kill</a>
-            <a class="editor-new" href="#">New</a>
+            <!--<a class="editor-new" href="#">New</a>-->
             <!--
             <ul class="the_menu">
                 <li><a href="#">A Website #1</a></li>
