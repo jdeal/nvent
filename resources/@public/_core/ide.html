@@ -495,14 +495,10 @@
                 });
                 */
                 
-                var worker = new Worker("lib/ide/worker.js");
                 
-                worker.onmessage = function(e){
-                    var data = JSON.parse(e.data);
-                    //$("#debug-pane").html(JSON.stringify(data.errors));
-                    displayCodeErrors(data.errors);
-                };
+                
 
+/*
                 setInterval(function(){
                     var tab = currentEditorTab();
                     if (tab !== null){
@@ -512,9 +508,48 @@
                         }));
                     }
                 },1000);
+*/
                 
 
             });
+            
+            var worker = new Worker("lib/ide/worker.js");
+            
+            // if code check already happening, mark this to run again
+            var needCodeCheck = false;
+            // mark that code check is running
+            var waitingForCodeCheck = false;
+            
+            worker.onmessage = function(e){
+                var data = JSON.parse(e.data);
+                //$("#debug-pane").html(JSON.stringify(data.errors));
+                displayCodeErrors(data.errors);
+                waitingForCodeCheck = false;
+                if (needCodeCheck){
+                    
+                    waitingForCodeCheck = true;
+                }
+            };
+            
+            function onEditorTextChanged(){
+                waitingForCodeCheck = true;
+                if (checkCodeInterval === null){
+                    checkCodeInterval = setInterval();
+                }
+            }
+            
+            function sendCheckCodeMessage(){
+                var tab = currentEditorTab();
+                if (tab !== null){
+                    worker.postMessage(JSON.stringify({
+                        type:"checkCodeQuality",
+                        code:tab.editor.value
+                    }));
+                } else {
+                    editorTextHasChanged = false;
+                    $("#debug-pane").html("");
+                }
+            }
         </script>
     </head>
     <body>
@@ -572,7 +607,7 @@
                 <!--<div style="padding: 0px; margin: 0px; border: 0px;" id="ide-editor-0"></div>-->
             </div>
             <div id="debug-pane" class="inner-south" style="padding: 0px;">
-                Debugging goes here.
+                
             </div>
         </div>
         <div style="display:none;">
