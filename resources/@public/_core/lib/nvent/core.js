@@ -77,8 +77,9 @@ if (typeof(require) === "undefined") {
     };
     
     var defaultErrorMessages = {
-        "not_implemented": "That feature is not yet implemented.",
-        "no_path": "No path specified",
+        "not_implemented": "This feature is not yet implemented.",
+        "access_denied": "Access denied for this feature.",
+        "no_path": "No path specified.",
         "invalid_path": "Invalid path.",
         "delete_dir_error": "Could not delete directory.",
         "delete_file_errir": "Could not delete file."
