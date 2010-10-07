@@ -327,8 +327,13 @@
                                             //this.create(null,"inside",
                                         }
                                     },
+                                    "remove": {
+                                        "label": "Delete",
+                                        "action": function(node){
+                                            this.remove(node);
+                                        }
+                                    },
                                     rename: false,
-                                    remove: false,
                                     ccp: false
                                 };
                             }
@@ -354,15 +359,7 @@
                 });
                 
                 $('#resource-browser').bind("create.jstree",function(e,data){
-                    //alert("*" + data.rslt.obj.attr("rel"));
-                    //alert(data.rslt.parent.attr("path") + "/" + data.rslt.name);
-                    //alert(data.args[0].attr("path") + "/" + data.rslt.name);
-                    //alert(data.rslt.parent.attr("path"));
-                    //alert(data.rslt.parent.name);
-                    //console.log(JSON.stringify(JSON.stringify(data.rslt)));
-                    //alert(data.args[0].attr("path"));
                     var path = data.rslt.parent.attr("path") + "/" + data.rslt.name;
-                    //alert(data.rslt.attr("rel"));
                     data.rslt.obj.attr("path",path);
                     var type = data.rslt.obj.attr("rel");
                     var contentParameter = "";
@@ -371,7 +368,18 @@
                     }
                     $.getJSON("/_core/save.json?path="+path+contentParameter,function(data){
                         if (data.success){
-                            //this.create(node,"inside",{attr:{rel:"folder",state:"closed"}});
+                            
+                        } else {
+                            alert("problem: " + data.error_message);
+                        }
+                    });
+                });
+                
+                $('#resource-browser').bind('remove.jstree',function(e,data){
+                    var path = data.rslt.obj.attr("path");
+                    $.getJSON("/_core/delete.json?path="+path,function(data){
+                        if (data.success){
+                            
                         } else {
                             alert("problem: " + data.error_message);
                         }

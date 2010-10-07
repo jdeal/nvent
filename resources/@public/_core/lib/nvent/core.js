@@ -76,8 +76,24 @@ if (typeof(require) === "undefined") {
         return Object.prototype.toString.call(o) === '[object String]';
     };
     
+    var defaultErrorMessages = {
+        "not_implemented": "That feature is not yet implemented.",
+        "no_path": "No path specified",
+        "invalid_path": "Invalid path.",
+        "delete_dir_error": "Could not delete directory.",
+        "delete_file_errir": "Could not delete file."
+    };
+    
     var error = exports.error = function error(type,message){
-        return {success:false,error:type,error_message:message};
+        if (isUndefined(message)){
+            if (type in defaultErrorMessages){
+                return error(type,defaultErrorMessages[type]);
+            } else {
+                return error(type,"Error: " + type);
+            }
+        } else {
+            return {success:false,error:type,error_message:message};
+        }
     };
     
     var success = exports.success = function success(result){
