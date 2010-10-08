@@ -46,29 +46,13 @@
                 if (tab !== null){
                     tab.editor.dimensionsChanged();
                 }
-                //contentReady = true;
-                //loadDefaultBespin();
             }
-            /*
-            function loadDefaultBespin(){
-                if (!defaultBespinLoaded){
-                    if (bespinReady && contentReady){
-                        attachBespin("ide-editor-0","Hello, world!","html");
-                        defaultBespinLoaded = true;
-                    }
-                }
-            }
-            */
 
             function attachBespin(id,content,syntax,callback){
                 bespin.useBespin(id,{
                     syntax: syntax
                 }).then(function(env) {
-                    //ideEnvironment = env;
                     env.settings.set("tabstop",ideTabStop);
-                    // Get the editor.
-                    //ideEditor = env.editor;
-                    // Change the value.
                     env.editor.value = content;
                     env.editor.setLineNumber(0);
                     if (typeof(callback)!=="undefined"){
@@ -82,7 +66,6 @@
             
             window.onBespinLoad = function() {
                 bespinReady = true;
-                //loadDefaultBespin();
             };
             
             function adjustDimension(dimension,max,min,multiplier){
@@ -150,7 +133,6 @@
             
             worker.onmessage = function(e){
                 var data = JSON.parse(e.data);
-                //$("#debug-pane").html(JSON.stringify(data.errors));
                 displayCodeErrors(data.errors);
                 waitingForCodeCheck = false;
                 if (needCodeCheck){
@@ -231,48 +213,61 @@
                         quality = codeQuality.clean;
                     }
                     displayCodeErrors(JSLINT.errors);
-                    /*
-                        log.append("The code is clean.");
-                    } else {
-                        var logTable = $('<table><thead><tr><th width="200">Description<\/th><th width="100">Location<\/th><\/tr><\/thead><\/table>');
-                        log.append(logTable);
-                        var logBody = $("<tbody><\/tbody"); 
-                        logTable.append(logBody);
-                        var gotoErrorPosition = function(){
-                            var row = parseInt($(this).attr("data-row"),10);
-                            var column = parseInt($(this).attr("data-column"),10);
-                            tab.editor.setCursor({row:row,col:column});
-                            currentEditorTab().editor.selection = {start:{row:row,col:0},end:{row:row+1,col:0}};
-                        };
-                        for (var i = 0; i < JSLINT.errors.length; i++){
-                            var error = JSLINT.errors[i];
-                            if (error !== null){
-                                var errorRow = $('<tr id="error_' + error.line + "_" + error.character + '" ' + 'data-row="' + (error.line - 1) + '" data-column="' + (error.character - 1) + '"><td>' + error.reason + '<\/td><td>' + error.line + ':' + error.character + '<\/td><\/tr>');
-                                logBody.append(errorRow);
-                                errorRow.click(gotoErrorPosition);
-                            }
-                        }
-                        logTable.flexigrid({height:'auto',striped:false});
-                    }
-                    */
                 }
                 if (typeof(callback) !== "undefined"){
                     callback(quality);
                 }
             }
+            
+            var leafTypeToContextMenu = {
+                "folder":{
+                    "create": {
+                        "submenu": {
+                            "newFolder": {
+                                "label": "Folder",
+                                "action": function(node){
+                                    this.create(node,"inside",{attr:{rel:"folder",state:"closed"}});
+                                }
+                            },
+                            "newFile": {
+                                "label": "File",
+                                "action": function(node){
+                                    this.create(node,"inside",{attr:{rel:"file"}});
+                                }
+                            }
+                        },
+                        "label": "New",
+                        "action": function(){
+                            //this.create(null,"inside",
+                        }
+                    },
+                    "remove": {
+                        "label": "Delete",
+                        "action": function(node){
+                            this.remove(node);
+                        }
+                    },
+                    rename: false,
+                    ccp: false
+                },
+                "file":{
+                    "create": false,
+                    "remove": {
+                        "label": "Delete",
+                        "action": function(node){
+                            this.remove(node);
+                        }
+                    },
+                    rename: false,
+                    ccp: false
+                }
+            };
                     
             $(function () {
                 var outerLayout = $("body").layout({
                     north__size: headerHeight,
                     west__size: explorerWidth,
                     onresize: function(){
-                        //setTimeout(resizeContent,1000);
-                        //resizeContent();
-                        //if (currentTab != null && typeof(currentTab.editor)!=="undefined"){
-                        //    currentTab.editor.dimensionsChanged();
-                        //}
-                        //ideEditor.dimensionsChanged();
-                        //console.log("resize");
                     }
                 });
                 var innerLayout = $("div.ui-layout-center").layout({
@@ -309,10 +304,6 @@
                                 },
                                 "valid_children": [],
                                 "select_node": function (n){
-                                    //alert(n.attr("path"))
-                                    //this.select_node(n)
-                                    //alert($(n).parent().attr("path"))
-                                    //ideEditor.nventPath = $(n).parent().attr("path");
                                     tabForPath($(n).parent().attr("path"),function(tab){
                                         $("#content-pane").tabs("select",tab.id);
                                         $.getJSON("/_core/file.json?path="+tab.path,function(data){
@@ -323,11 +314,9 @@
                                                 for (var i = 0; i < ideTabStop; i++){
                                                     tabSpaces = tabSpaces + " ";
                                                 }
-                                                //alert(reTab.test(data.result.content));
                                                 var content = data.result.content.replace(reTabLine,function(match){
                                                     return match.replace(reTab,tabSpaces);
                                                 });
-                                                //alert(content);
                                                 if (tab.path.endsWith("js") || tab.path.endsWith("json")){
                                                     tab.editor.syntax = "js";
                                                 } else if (tab.path.endsWith("html")){
@@ -382,6 +371,12 @@
                         items: function(n){
                             var path = $(n).attr("path");
                             var type = $(n).attr("rel");
+                            if (type in leafTypeToContextMenu){
+                                return leafTypeToContextMenu[type];
+                            } else {
+                                return null;
+                            }
+                            /*
                             if (type==="folder"){
                                 return {
                                     "create": {
@@ -413,7 +408,7 @@
                                     rename: false,
                                     ccp: false
                                 };
-                            }
+                            }*/
                         }
                     },
                     "sort": function(a,b){
@@ -534,29 +529,6 @@
                 $(".editor-debug").button().click(function(){
                     checkCodeQuality();
                 });
-                
-                /*
-                $(".editor-new").button({icons: {secondary: 'ui-icon-triangle-1-s'}}).click(function(){
-                    //addEditor("new","","",callback)
-                });
-                */
-                
-                
-                
-
-/*
-                setInterval(function(){
-                    var tab = currentEditorTab();
-                    if (tab !== null){
-                        worker.postMessage(JSON.stringify({
-                            type:"checkCodeQuality",
-                            code:tab.editor.value
-                        }));
-                    }
-                },1000);
-*/
-                
-
             });
         </script>
     </head>
