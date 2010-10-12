@@ -556,6 +556,14 @@
                     return false;
                 });
                 
+                $(".server-run").button().click(function(){
+                    var tab = currentEditorTab();
+                    $.getJSON("/_core/run.json?path="+tab.path,function(data){
+                        alert(JSON.stringify(data));
+                        //window.location.reload();
+                    });
+                });
+                
                 $(".editor-debug").button().click(function(){
                     checkCodeQuality();
                 });
@@ -582,6 +590,7 @@
             -->
             <a class="server-save" href="#">Save</a>
             <!--<a class="editor-debug" href="#">Check code</a>-->
+            <a class="server-run" href="#">Run</a>
         </div>
         <div class="ui-layout-west">
             <div id="resource-browser">
@@ -619,8 +628,10 @@
             <div id="console-pane" class="inner-south" style="overflow: hidden; padding: 0px;">
                 <ul id="console-tabs" style="padding: 0px;  margin:0px;">
                     <li><a href="#debug-container">Errors</a></li>
+                    <li><a href="#output-container">Output</a></li>
                 </ul>
-                <div id="debug-container" style="padding: 0px; overflow: auto;"></div>
+                <div id="debug-container" style="padding: 0px;"></div>
+                <div id="output-container" style="padding: 0px;"></div>
             </div>
         </div>
         <div style="display:none;">

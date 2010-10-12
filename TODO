@@ -1,2 +1,4 @@
 - If file already open, confirm user wants to lose changes.
 - For plain text files, turn off quality check.
+- Change width of columns in error tab.
+- Add hotkey support for save.
