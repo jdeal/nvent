@@ -1,0 +1,2 @@
+- If file already open, confirm user wants to lose changes.
+- For plain text files, turn off quality check.

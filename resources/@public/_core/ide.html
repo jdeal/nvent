@@ -27,9 +27,11 @@
             //var defaultBespinLoaded = false;
             
             var currentTabId = "";
+            var currentConsoleTabId = "";
             var tabIdToTab = {};
             var pathToTab = {};
             var currentTab = null;
+            var logTable = null;
             
             function currentEditorTab(){
                 if (typeof(currentTab) !== "undefined" && currentTab !== null){
@@ -48,7 +50,14 @@
                 if (tab !== null){
                     tab.editor.dimensionsChanged();
                 }
-            }
+                $("#console-tabs").width($("#console-pane").width());
+                $("#" + currentConsoleTabId).height($("#console-pane").height()-$("#console-tabs").outerHeight());
+                $("#" + currentConsoleTabId).width($("#console-pane").width());
+                
+                $("#debug-container .flexigrid").width($("#console-pane").width());
+                var extraHeight = $("#debug-container .flexigrid").height() - $("#debug-container .bDiv").height();
+                $("#debug-container .bDiv").height($("#console-pane").height()-$("#console-tabs").outerHeight()-extraHeight);
+        }
 
             function attachBespin(id,content,syntax,callback){
                 bespin.useBespin(id,{
@@ -85,12 +94,12 @@
             };
         
             function displayCodeErrors(errors){
-                var log = $("#debug-pane");
+                var log = $("#debug-container");
                 log.html("");
                 if (errors.length === 0){
                     log.append("The code is clean.");
                 } else {
-                    var logTable = $('<table><thead><tr><th width="200">Description<\/th><th width="100">Location<\/th><\/tr><\/thead><\/table>');
+                    logTable = $('<table id="debug-log"><thead><tr><th width="200">Description<\/th><th width="100">Location<\/th><\/tr><\/thead><\/table>');
                     log.append(logTable);
                     var logBody = $("<tbody><\/tbody"); 
                     logTable.append(logBody);
@@ -109,7 +118,10 @@
                             errorRow.click(gotoErrorPosition);
                         }
                     }
-                    logTable.flexigrid({height:'auto',striped:false});
+                    logTable.flexigrid({striped:false,height:0,resizable:false});
+                    $("#debug-container .flexigrid").width($("#console-pane").width());
+                    var extraHeight = $("#debug-container .flexigrid").height() - $("#debug-container .bDiv").height();
+                    $("#debug-container .bDiv").height($("#console-pane").height()-$("#console-tabs").outerHeight()-extraHeight);
                 }
             }
 
@@ -129,7 +141,7 @@
                     }));
                 } else {
                     editorTextHasChanged = false;
-                    $("#debug-pane").html("");
+                    $("#debug-container").html("");
                 }
             }
             
@@ -205,7 +217,7 @@
             }
             
             function checkCodeQuality(callback){
-                var log = $("#debug-pane");
+                var log = $("#debug-container");
                 log.html("");
                 var tab = currentEditorTab();
                 var quality = codeQuality.error;
@@ -481,6 +493,12 @@
                         delete pathToTab[tab.path];                        
                     }
                 });
+                $("#console-pane").tabs({
+                    show: function(event, ui){
+                        currentConsoleTabId = ui.panel.id;
+                        resizeContent();
+                    }
+                });
                 resizeContent();
                 
                 $(".server-restart").button().click(function(){
@@ -598,8 +616,11 @@
                 <div style="padding: 0px; margin: 0px; border: 0px;" id="home"><br/>Welcome to the awesome node.js IDE!</div>
                 <!--<div style="padding: 0px; margin: 0px; border: 0px;" id="ide-editor-0"></div>-->
             </div>
-            <div id="debug-pane" class="inner-south" style="padding: 0px;">
-                
+            <div id="console-pane" class="inner-south" style="overflow: hidden; padding: 0px;">
+                <ul id="console-tabs" style="padding: 0px;  margin:0px;">
+                    <li><a href="#debug-container">Errors</a></li>
+                </ul>
+                <div id="debug-container" style="padding: 0px; overflow: auto;"></div>
             </div>
         </div>
         <div style="display:none;">
