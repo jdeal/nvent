@@ -17,6 +17,8 @@
         <script src="/_core/lib/nvent/core.js"></script>
         <script src="/_core/lib/bespin/BespinEmbedded.js"></script>
         <script>
+            var core = require('nvent/core');
+        
             //var ideEditor = null;
             //var ideEnvironment = null;
             var ideTabStop = 4;
@@ -355,15 +357,20 @@
                                 }
                             },
                             "success":function(data){
-                                var result = data.result;
-                                for (var i = 0; i < result.length; i++){
-                                    if (typeof(result[i].state)==="undefined"){
-                                        result[i].attr.rel = "file";
-                                    } else {
-                                        result[i].attr.rel = "folder";
+                                if (core.isSuccess(data)){
+                                    var result = data.result;
+                                    for (var i = 0; i < result.length; i++){
+                                        if (typeof(result[i].state)==="undefined"){
+                                            result[i].attr.rel = "file";
+                                        } else {
+                                            result[i].attr.rel = "folder";
+                                        }
                                     }
+                                    return result;
+                                } else {
+                                    alert("problem: " + core.errorMessage(data));
+                                    return [];
                                 }
-                                return result;
                             }
                         }
                     },
@@ -439,10 +446,10 @@
                         contentParameter = "&content=";
                     }
                     $.getJSON("/_core/save.json?path="+path+contentParameter,function(data){
-                        if (data.success){
+                        if (core.isSuccess(data)){
                             
                         } else {
-                            alert("problem: " + data.error_message);
+                            alert("problem: " + core.errorMessage(data));
                         }
                     });
                 });
@@ -450,10 +457,10 @@
                 $('#resource-browser').bind('remove.jstree',function(e,data){
                     var path = data.rslt.obj.attr("path");
                     $.getJSON("/_core/delete.json?path="+path,function(data){
-                        if (data.success){
+                        if (core.isSuccess(data)){
                             
                         } else {
-                            alert("problem: " + data.error_message);
+                            alert("problem: " + core.errorMessage(data));
                         }
                     });
                 });
@@ -501,6 +508,7 @@
                         checkCodeQuality(function(quality){
                             var saveCode = function(){
                                 $.post("/_core/save.json",{path:tab.path,content:tab.editor.value},function(data){
+                                    $("a[href=#" + tab.id + "]").parent().effect("highlight",{color: '#00ff00'},1000);
                                 });
                             };
                             if (quality == codeQuality.clean){
