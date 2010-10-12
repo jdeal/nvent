@@ -492,7 +492,7 @@
                 $(".server-kill").button().click(function(){
                     if (confirm("Are you sure you want to kill the server?")){
                         $.getJSON("/_core/kill.json",function(data){
-                            window.location.reload();
+                            //window.location.reload();
                         });
                     }
                 });
@@ -508,7 +508,11 @@
                         checkCodeQuality(function(quality){
                             var saveCode = function(){
                                 $.post("/_core/save.json",{path:tab.path,content:tab.editor.value},function(data){
-                                    $("a[href=#" + tab.id + "]").parent().effect("highlight",{color: '#00ff00'},1000);
+                                    if (core.isSuccess(data)){
+                                        $("a[href=#" + tab.id + "]").parent().effect("highlight",{color: '#00ff00'},1000);
+                                    } else {
+                                        alert("problem: " + core.errorMessage(data));
+                                    }
                                 });
                             };
                             if (quality == codeQuality.clean){
