@@ -2,3 +2,5 @@
 - For plain text files, turn off quality check.
 - Change width of columns in error tab.
 - Add hotkey support for save.
+- Finish and clean up run.
+- Prompt to save before running.

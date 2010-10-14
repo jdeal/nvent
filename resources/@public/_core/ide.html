@@ -559,8 +559,9 @@
                 $(".server-run").button().click(function(){
                     var tab = currentEditorTab();
                     $.getJSON("/_core/run.json?path="+tab.path,function(data){
-                        alert(JSON.stringify(data));
+                        //alert(JSON.stringify(data));
                         //window.location.reload();
+                        $("#output-container").html(data.result);
                     });
                 });
                 
