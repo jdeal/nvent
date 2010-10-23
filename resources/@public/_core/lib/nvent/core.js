@@ -53,6 +53,10 @@ if (typeof(require) === "undefined") {
         }
         return false;
     };
+    
+    var isDefined = exports.isDefined = function(value){
+        return !isUndefined(value);
+    };
 
     var isNothing = exports.isNothing = function(value){
         if (typeof(value)==="undefined" || value===null){
